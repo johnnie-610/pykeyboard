@@ -2,14 +2,13 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 class InlinePaginationKeyboard(InlineKeyboardMarkup):
-    SYMBOL_FIRST_PAGE = '« {}'
-    SYMBOL_PREVIOUS_PAGE = '‹ {}'
-    SYMBOL_CURRENT_PAGE = '· {} ·'
-    SYMBOL_NEXT_PAGE = '{} ›'
-    SYMBOL_LAST_PAGE = '{} »'
+    SYMBOL_FIRST_PAGE = "« {}"
+    SYMBOL_PREVIOUS_PAGE = "‹ {}"
+    SYMBOL_CURRENT_PAGE = "· {} ·"
+    SYMBOL_NEXT_PAGE = "{} ›"
+    SYMBOL_LAST_PAGE = "{} »"
 
-    def __init__(self, count_pages: int, current_page: int,
-                 callback_pattern: str):
+    def __init__(self, count_pages: int, current_page: int, callback_pattern: str):
         self.inline_keyboard = list()
         super().__init__(inline_keyboard=self.inline_keyboard)
         self.count_pages = count_pages
@@ -19,65 +18,76 @@ class InlinePaginationKeyboard(InlineKeyboardMarkup):
 
     def add_button(self, text, callback_data):
         return InlineKeyboardButton(
-            text=text,
-            callback_data=self.callback_pattern.format(
-                number=callback_data)
+            text=text, callback_data=self.callback_pattern.format(number=callback_data)
         )
 
     @property
     def left_pagination(self):
         return [
-            self.add_button(
-                self.SYMBOL_CURRENT_PAGE.format(number), number)
-            if number == self.current_page else self.add_button(
-                self.SYMBOL_NEXT_PAGE.format(number), number)
-            if number == 4 else self.add_button(
-                self.SYMBOL_LAST_PAGE.format(self.count_pages),
-                self.count_pages)
-            if number == 5 else self.add_button(number, number)
+            (
+                self.add_button(self.SYMBOL_CURRENT_PAGE.format(number), number)
+                if number == self.current_page
+                else (
+                    self.add_button(self.SYMBOL_NEXT_PAGE.format(number), number)
+                    if number == 4
+                    else (
+                        self.add_button(
+                            self.SYMBOL_LAST_PAGE.format(self.count_pages),
+                            self.count_pages,
+                        )
+                        if number == 5
+                        else self.add_button(number, number)
+                    )
+                )
+            )
             for number in range(1, 6)
         ]
 
     @property
     def middle_pagination(self):
         return [
-            self.add_button(
-                self.SYMBOL_FIRST_PAGE.format(1), 1),
+            self.add_button(self.SYMBOL_FIRST_PAGE.format(1), 1),
             self.add_button(
                 self.SYMBOL_PREVIOUS_PAGE.format(self.current_page - 1),
-                self.current_page - 1),
+                self.current_page - 1,
+            ),
             self.add_button(
-                self.SYMBOL_CURRENT_PAGE.format(self.current_page),
-                self.current_page),
+                self.SYMBOL_CURRENT_PAGE.format(self.current_page), self.current_page
+            ),
             self.add_button(
                 self.SYMBOL_NEXT_PAGE.format(self.current_page + 1),
-                self.current_page + 1),
+                self.current_page + 1,
+            ),
             self.add_button(
-                self.SYMBOL_LAST_PAGE.format(self.count_pages),
-                self.count_pages),
+                self.SYMBOL_LAST_PAGE.format(self.count_pages), self.count_pages
+            ),
         ]
 
     @property
     def right_pagination(self):
         return [
-            self.add_button(
-                self.SYMBOL_FIRST_PAGE.format(1), 1),
+            self.add_button(self.SYMBOL_FIRST_PAGE.format(1), 1),
             self.add_button(
                 self.SYMBOL_PREVIOUS_PAGE.format(self.count_pages - 3),
-                self.count_pages - 3)
+                self.count_pages - 3,
+            ),
         ] + [
-            self.add_button(
-                self.SYMBOL_CURRENT_PAGE.format(number), number)
-            if number == self.current_page else self.add_button(number, number)
+            (
+                self.add_button(self.SYMBOL_CURRENT_PAGE.format(number), number)
+                if number == self.current_page
+                else self.add_button(number, number)
+            )
             for number in range(self.count_pages - 2, self.count_pages + 1)
         ]
 
     @property
     def full_pagination(self):
         return [
-            self.add_button(number, number)
-            if number != self.current_page else self.add_button(
-                self.SYMBOL_CURRENT_PAGE.format(number), number)
+            (
+                self.add_button(number, number)
+                if number != self.current_page
+                else self.add_button(self.SYMBOL_CURRENT_PAGE.format(number), number)
+            )
             for number in range(1, self.count_pages + 1)
         ]
 
@@ -102,9 +112,17 @@ class InlinePaginationKeyboard(InlineKeyboardMarkup):
 
 
 class InlineButton(InlineKeyboardButton):
-    def __init__(self, text=None, callback_data=None, url=None,
-                 login_url=None, user_id=None, switch_inline_query=None,
-                 switch_inline_query_current_chat=None, callback_game=None):
+    def __init__(
+        self,
+        text=None,
+        callback_data=None,
+        url=None,
+        login_url=None,
+        user_id=None,
+        switch_inline_query=None,
+        switch_inline_query_current_chat=None,
+        callback_game=None,
+    ):
         super().__init__(
             text=text,
             callback_data=callback_data,
@@ -113,5 +131,5 @@ class InlineButton(InlineKeyboardButton):
             user_id=user_id,
             switch_inline_query=switch_inline_query,
             switch_inline_query_current_chat=switch_inline_query_current_chat,
-            callback_game=callback_game
+            callback_game=callback_game,
         )

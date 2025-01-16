@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "pykeyboard-kurigram"
+version = "0.1.0"
+description = "Best Keyboard and Pagination for the Pyrogram Library."
+authors = ["Johnnie <99084912+johnnie-610@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "pykeyboard"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+kurigram = "^2.1.36"
+tgcrypto = "^1.2.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

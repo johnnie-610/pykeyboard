@@ -3,32 +3,59 @@
 <img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/logo.png" alt="pykeyboard">
 </p>
 
-![PyPI](https://img.shields.io/pypi/v/pykeyboard)
-[![Downloads](https://pepy.tech/badge/pykeyboard)](https://pepy.tech/project/pykeyboard)
-![GitHub](https://img.shields.io/github/license/pystorage/pykeyboard)
+![PyPI](https://img.shields.io/pypi/v/pykeyboard-kurigram)
+[![Downloads](https://pepy.tech/badge/pykeyboard-kurigram)](https://pepy.tech/project/pykeyboard-kurigram)
+![GitHub](https://img.shields.io/github/license/pystorage/pykeyboard-kurigram)
 
- <p><h2>🎉 Thank you for 1M downloads 🎉 I love you...🥰</h2></p>
+ <p><h2>🎉This is pykeyboard for <a href="https://github.com/KurimuzonAkuma/pyrogram">Kurigram</a> 🎉</h2></p>
+ <br>
+ <p><strong><em>No need to change your code, just install the library and you're good to go.</em></strong></p>
 
 </div>
 
 # Pykeyboard
 
-- [<b>What's new?</b>](#whats-new)
-- [<b>Installation</b>](#installation)
-- [<b>Documentation</b>](#documentation)
-  - [<b>Inline Keyboard</b>](#inline-keyboard)
+- [Pykeyboard](#pykeyboard)
+- [What's new?](#whats-new)
+- [Installation](#installation)
+- [Documentation](#documentation)
+  - [Inline Keyboard](#inline-keyboard)
+        - [Parameters:](#parameters)
     - [Inline Keyboard add buttons](#inline-keyboard-add-buttons)
+      - [Code](#code)
+      - [Result](#result)
     - [Inline Keyboard row buttons](#inline-keyboard-row-buttons)
-    - [<b>Pagination inline keyboard</b>](#pagination-inline-keyboard)
+      - [Code](#code-1)
+      - [Result](#result-1)
+    - [Pagination inline keyboard](#pagination-inline-keyboard)
+      - [Parameters:](#parameters-1)
       - [Pagination 3 pages](#pagination-3-pages)
+      - [Code](#code-2)
+      - [Result](#result-2)
       - [Pagination 5 pages](#pagination-5-pages)
+      - [Code](#code-3)
+      - [Result](#result-3)
       - [Pagination 9 pages](#pagination-9-pages)
+      - [Code](#code-4)
+      - [Result](#result-4)
       - [Pagination 100 pages](#pagination-100-pages)
+      - [Code](#code-5)
+      - [Result](#result-5)
       - [Pagination 150 pages and buttons](#pagination-150-pages-and-buttons)
-    - [<b>Languages inline keyboard</b>](#languages-inline-keyboard)
-  - [<b>Reply Keyboard</b>](#reply-keyboard)
+      - [Code](#code-6)
+      - [Result](#result-6)
+    - [Languages inline keyboard](#languages-inline-keyboard)
+      - [Parameters:](#parameters-2)
+      - [Code](#code-7)
+      - [Result](#result-7)
+  - [Reply Keyboard](#reply-keyboard)
+      - [Parameters:](#parameters-3)
     - [Reply Keyboard add buttons](#reply-keyboard-add-buttons)
+      - [Code](#code-8)
+      - [Result](#result-8)
     - [Reply Keyboard row buttons](#reply-keyboard-row-buttons)
+      - [Code](#code-9)
+      - [Result](#result-9)
 
 # What's new?
 
@@ -39,7 +66,17 @@
 # Installation
 
 ```shell
-pip install pykeyboard
+
+pip install pykeyboard-kurigram
+
+```
+
+or
+
+```shell
+
+poetry add pykeyboard-kurigram
+
 ```
 
 # Documentation
