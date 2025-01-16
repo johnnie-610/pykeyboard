@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pykeyboard-kurigram"
-version = "0.1.0"
-description = "Best Keyboard and Pagination for the Pyrogram Library."
+version = "0.1.1"
+description = "Best Keyboard and Pagination for the Kurigram Library."
 authors = ["Johnnie <99084912+johnnie-610@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"

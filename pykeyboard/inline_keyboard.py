@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Johnnie
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 from pyrogram.emoji import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import List, Union

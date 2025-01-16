@@ -1,11 +1,11 @@
 <div align="center">
 <p align="center">
-<img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/logo.png" alt="pykeyboard">
+<img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/logo.png" alt="pykeyboard">
 </p>
 
 ![PyPI](https://img.shields.io/pypi/v/pykeyboard-kurigram)
 [![Downloads](https://pepy.tech/badge/pykeyboard-kurigram)](https://pepy.tech/project/pykeyboard-kurigram)
-![GitHub](https://img.shields.io/github/license/pystorage/pykeyboard-kurigram)
+![GitHub](https://img.shields.io/github/license/johnnie-610/pykeyboard)
 
  <p><h2>🎉This is pykeyboard for <a href="https://github.com/KurimuzonAkuma/pyrogram">Kurigram</a> 🎉</h2></p>
  <br>
@@ -113,7 +113,7 @@ keyboard.add(
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/add_inline_button.png" alt="add_inline_button"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/add_inline_button.png" alt="add_inline_button"></p>
 
 ### Inline Keyboard row buttons
 
@@ -138,7 +138,7 @@ keyboard.row(
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/row_inline_button.png" alt="row_inline_button"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/row_inline_button.png" alt="row_inline_button"></p>
 
 ### Pagination inline keyboard
 
@@ -165,7 +165,7 @@ keyboard.paginate(3, 3, 'pagination_keyboard:{number}')
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/pagination_keyboard_3.png" alt="pagination_keyboard_3"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/pagination_keyboard_3.png" alt="pagination_keyboard_3"></p>
 
 #### Pagination 5 pages
 
@@ -180,7 +180,7 @@ keyboard.paginate(5, 3, 'pagination_keyboard:{number}')
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/pagination_keyboard_5.png" alt="pagination_keyboard_5"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/pagination_keyboard_5.png" alt="pagination_keyboard_5"></p>
 
 #### Pagination 9 pages
 
@@ -195,7 +195,7 @@ keyboard.paginate(9, 5, 'pagination_keyboard:{number}')
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/pagination_keyboard_9.png" alt="pagination_keyboard_9"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/pagination_keyboard_9.png" alt="pagination_keyboard_9"></p>
 
 #### Pagination 100 pages
 
@@ -210,7 +210,7 @@ keyboard.paginate(100, 100, 'pagination_keyboard:{number}')
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/pagination_keyboard_100.png" alt="pagination_keyboard_100"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/pagination_keyboard_100.png" alt="pagination_keyboard_100"></p>
 
 #### Pagination 150 pages and buttons
 
@@ -229,7 +229,7 @@ keyboard.row(
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/pagination_keyboard_150.png" alt="pagination_keyboard_150"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/pagination_keyboard_150.png" alt="pagination_keyboard_150"></p>
 
 ### Languages inline keyboard
 
@@ -255,7 +255,7 @@ from pykeyboard import InlineKeyboard
   - uk_UA - Ukrainian
   - uz_UZ - Uzbek
 - row_width (integer, default 2)
-<p>P.S. To add new languages, write to me in <a href="https://t.me/pymaster">@PyMaster</a> telegram.</p>
+
 
 #### Code
 
@@ -271,7 +271,7 @@ keyboard.languages(
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/languages_keyboard.png" alt="languages_keyboard"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/languages_keyboard.png" alt="languages_keyboard"></p>
 
 ## Reply Keyboard
 
@@ -306,7 +306,7 @@ keyboard.add(
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/add_reply_button.png" alt="add_reply_button"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/add_reply_button.png" alt="add_reply_button"></p>
 
 ### Reply Keyboard row buttons
 
@@ -328,4 +328,4 @@ keyboard.row(ReplyButton('Reply button 5'))
 
 #### Result
 
-<p><img src="https://raw.githubusercontent.com/pystorage/pykeyboard/master/docs/source/images/row_reply_button.png" alt="row_reply_button"></p>
+<p><img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/row_reply_button.png" alt="row_reply_button"></p>
