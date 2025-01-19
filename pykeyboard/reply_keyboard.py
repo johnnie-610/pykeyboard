@@ -14,15 +14,17 @@ from pyrogram.types import (
 class ReplyKeyboard(ReplyKeyboardMarkup):
     def __init__(
         self,
-        resize_keyboard=None,
-        one_time_keyboard=None,
-        selective=None,
-        placeholder=None,
+        is_persistent: bool | None = None,
+        resize_keyboard: bool | None = None,
+        one_time_keyboard: bool | None = None,
+        selective: bool | None = None,
+        placeholder: str | None = None,
         row_width=3,
     ):
         self.keyboard = list()
         super().__init__(
             keyboard=self.keyboard,
+            is_persistent=is_persistent,
             resize_keyboard=resize_keyboard,
             one_time_keyboard=one_time_keyboard,
             selective=selective,

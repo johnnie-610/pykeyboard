@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "pykeyboard"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.5"
 kurigram = "^2.1.36"
 tgcrypto = "^1.2.5"
 

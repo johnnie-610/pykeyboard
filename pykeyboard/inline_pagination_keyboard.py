@@ -3,7 +3,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, LoginUrl, WebAppInfo, CallbackGame
 
 
 class InlinePaginationKeyboard(InlineKeyboardMarkup):
@@ -119,22 +119,30 @@ class InlinePaginationKeyboard(InlineKeyboardMarkup):
 class InlineButton(InlineKeyboardButton):
     def __init__(
         self,
-        text=None,
-        callback_data=None,
-        url=None,
-        login_url=None,
-        user_id=None,
-        switch_inline_query=None,
-        switch_inline_query_current_chat=None,
-        callback_game=None,
+        text: str,
+        callback_data: str | bytes | None=None,
+        url: str | None=None,
+        web_app: WebAppInfo | None=None,
+        login_url: LoginUrl | None=None,
+        user_id: int | None=None,
+        switch_inline_query: str | None=None,
+        switch_inline_query_current_chat: str | None=None,
+        callback_game: CallbackGame | None=None,
+        requires_password: bool | None=None,
+        pay: bool | None = None,
+        copy_text: str | None = None
     ):
         super().__init__(
             text=text,
             callback_data=callback_data,
             url=url,
+            web_app=web_app,
             login_url=login_url,
             user_id=user_id,
             switch_inline_query=switch_inline_query,
             switch_inline_query_current_chat=switch_inline_query_current_chat,
             callback_game=callback_game,
+            requires_password=requires_password,
+            pay = pay,
+            copy_text = copy_text
         )
