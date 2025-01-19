@@ -3,58 +3,72 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+from dataclasses import dataclass
 from pyrogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
     ReplyKeyboardRemove,
     ForceReply,
+    RequestChannelInfo,
+    RequestChatInfo,
+    RequestUserInfo,
+    RequestPollInfo,
+    WebAppInfo,
 )
+from .keyboard_base import KeyboardBase, Button
 
 
-class ReplyKeyboard(ReplyKeyboardMarkup):
-    def __init__(
-        self,
-        is_persistent: bool | None = None,
-        resize_keyboard: bool | None = None,
-        one_time_keyboard: bool | None = None,
-        selective: bool | None = None,
-        placeholder: str | None = None,
-        row_width=3,
-    ):
-        self.keyboard = list()
+@dataclass
+class ReplyKeyboard(ReplyKeyboardMarkup, KeyboardBase):
+    is_persistent: bool | None = None
+    resize_keyboard: bool | None = None
+    one_time_keyboard: bool | None = None
+    selective: bool | None = None
+    placeholder: str | None = None
+
+    def __post_init__(self):
         super().__init__(
             keyboard=self.keyboard,
-            is_persistent=is_persistent,
-            resize_keyboard=resize_keyboard,
-            one_time_keyboard=one_time_keyboard,
-            selective=selective,
-            placeholder=placeholder,
-        )
-        self.row_width = row_width
-
-    def add(self, *args):
-        self.keyboard = [
-            args[i : i + self.row_width] for i in range(0, len(args), self.row_width)
-        ]
-
-    def row(self, *args):
-        self.keyboard.append([button for button in args])
-
-
-class ReplyButton(KeyboardButton):
-    def __init__(self, text=None, request_contact=None, request_location=None):
-        super().__init__(
-            text=text,
-            request_contact=request_contact,
-            request_location=request_location,
+            is_persistent=self.is_persistent,
+            resize_keyboard=self.resize_keyboard,
+            one_time_keyboard=self.one_time_keyboard,
+            selective=self.selective,
+            placeholder=self.placeholder,
         )
 
 
+@dataclass
+class ReplyButton(KeyboardButton, Button):
+    request_contact: bool | None = None
+    request_location: bool | None = None
+    request_poll: RequestPollInfo | None = None
+    request_peer: RequestUserInfo | RequestChannelInfo | RequestChatInfo | None = None
+    web_app: WebAppInfo | None = None
+
+    def __post_init__(self):
+        super().__post_init__()
+        super(KeyboardButton, self).__init__(
+            text=self.text,
+            request_contact=self.request_contact,
+            request_location=self.request_location,
+            request_poll=self.request_poll,
+            request_peer=self.request_peer,
+            web_app=self.web_app,
+        )
+
+
+@dataclass
 class ReplyKeyboardRemove(ReplyKeyboardRemove):
-    def __init__(self, selective=None):
-        super().__init__(selective=selective)
+    selective: bool | None = None
+
+    def __post_init__(self):
+        super().__init__(selective=self.selective)
 
 
+@dataclass
 class ForceReply(ForceReply):
-    def __init__(self, selective=None, placeholder=None):
-        super().__init__(selective=selective, placeholder=placeholder)
+    selective: bool | None = None
+    placeholder: str | None = None
+
+    def __post_init__(self):
+        super().__init__(selective=self.selective, placeholder=self.placeholder)

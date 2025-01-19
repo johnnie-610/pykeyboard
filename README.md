@@ -59,9 +59,7 @@
 
 # What's new?
 
-- Overriding the <b>KeyboardButton</b>, <b>ReplyKeyboardRemove</b>, <b>ForceReply</b>, <b>InlineKeyboardButton</b> methods in <b>ReplyButton</b>, <b>ReplyKeyboardRemove</b>, <b>ForceReply</b>, <b>InlineButton</b>.
-- Added new method <b>InlineKeyboard</b>. To send <a href="#languages-inline-keyboard"><ins>language selection keyboard</ins></a>.
-- Minor changes due to update in Pyrogram.
+- Minor changes due to update in Kurigram.
 
 # Installation
 
