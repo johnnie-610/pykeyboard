@@ -24,7 +24,6 @@ class KeyboardBase:
 
 @dataclass
 class Button:
-
     text: str
 
     def __post_init__(self):
@@ -33,7 +32,7 @@ class Button:
 
 
 @dataclass
-class InlineButton(InlineKeyboardButton, Button):
+class InlineButton(Button, InlineKeyboardButton):
     callback_data: str | bytes | None = None
     url: str | None = None
     web_app: WebAppInfo | None = None
@@ -47,8 +46,9 @@ class InlineButton(InlineKeyboardButton, Button):
     copy_text: str | None = None
 
     def __post_init__(self):
-        super().__post_init__()
-        super(InlineKeyboardButton, self).__init__(
+        Button.__post_init__(self)
+        InlineKeyboardButton.__init__(
+            self,
             text=self.text,
             callback_data=self.callback_data,
             url=self.url,

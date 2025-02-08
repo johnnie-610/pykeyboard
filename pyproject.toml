@@ -1,15 +1,19 @@
 [tool.poetry]
 name = "pykeyboard-kurigram"
-version = "0.1.2"
+version = "0.1.3"
 description = "Best Keyboard and Pagination for the Kurigram Library."
-authors = ["Johnnie <99084912+johnnie-610@users.noreply.github.com>"]
+authors = ["Johnnie <expose-bright-coat@duck.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "pykeyboard"}]
 
+[tool.poetry.urls]
+repository = "https://github.com/johnnie-610/pykeyboard"
+bug_tracker = "https://github.com/pystorage/pykeyboard/issues"
+
 [tool.poetry.dependencies]
 python = "^3.8"
-kurigram = "^2.1.36"
+kurigram = "^2.1.35"
 
 
 [build-system]
