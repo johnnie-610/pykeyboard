@@ -2,14 +2,14 @@
 
 [[package]]
 name = "kurigram"
-version = "2.1.36"
+version = "2.1.38"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 category = "main"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "Kurigram-2.1.36-py3-none-any.whl", hash = "sha256:04bacdecfdf9cb91c3698f66b2ab9c5cfcf6b7b7cf30c5b84066b54612e40a75"},
-    {file = "kurigram-2.1.36.tar.gz", hash = "sha256:341815a38b71c75c8fe76e3d55b079fea6477548aa58459dd4d984512f467ba2"},
+    {file = "Kurigram-2.1.38-py3-none-any.whl", hash = "sha256:6489803d829e90ee10a9e09d163fa95278e14ed5a29761818487c43ec8961ecc"},
+    {file = "kurigram-2.1.38.tar.gz", hash = "sha256:d26fe47eaa8b29e494cceda6742045b96ff2d3f429fd28c2bfb25b3216eb8873"},
 ]
 
 [package.dependencies]
@@ -43,4 +43,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "226b76f5244b69d03df4577be61ef963a2cefe6cef40f2eb4246b9820d9ce675"
+content-hash = "d5db3cdc31a78a39d3ae54add35e22bb08b3663dede765e6c18e758b6a104dde"
