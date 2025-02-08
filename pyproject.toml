@@ -9,7 +9,6 @@ packages = [{include = "pykeyboard"}]
 
 [tool.poetry.urls]
 repository = "https://github.com/johnnie-610/pykeyboard"
-bug_tracker = "https://github.com/pystorage/pykeyboard/issues"
 
 [tool.poetry.dependencies]
 python = "^3.8"
