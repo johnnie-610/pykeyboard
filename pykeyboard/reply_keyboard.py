@@ -2,17 +2,18 @@
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+# 
+# This file is part of the pykeyboard-kurigram library
 
 from dataclasses import dataclass
 from pyrogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
-    ReplyKeyboardRemove,
+    ReplyKeyboardRemove, # type: ignore
     ForceReply,
-    RequestChannelInfo,
-    RequestChatInfo,
-    RequestUserInfo,
-    RequestPollInfo,
+    KeyboardButtonPollType,
+    KeyboardButtonRequestUsers,
+    KeyboardButtonRequestChat,
     WebAppInfo,
 )
 from .keyboard_base import KeyboardBase, Button
@@ -28,12 +29,12 @@ class ReplyKeyboard(ReplyKeyboardMarkup, KeyboardBase):
 
     def __post_init__(self):
         super().__init__(
-            keyboard=self.keyboard,
-            is_persistent=self.is_persistent,
-            resize_keyboard=self.resize_keyboard,
-            one_time_keyboard=self.one_time_keyboard,
-            selective=self.selective,
-            placeholder=self.placeholder,
+            keyboard=self.keyboard, # type: ignore
+            is_persistent=self.is_persistent, # type: ignore
+            resize_keyboard=self.resize_keyboard, # type: ignore
+            one_time_keyboard=self.one_time_keyboard, # type: ignore
+            selective=self.selective, # type: ignore
+            placeholder=self.placeholder, # type: ignore
         )
 
 
@@ -41,34 +42,36 @@ class ReplyKeyboard(ReplyKeyboardMarkup, KeyboardBase):
 class ReplyButton(KeyboardButton, Button):
     request_contact: bool | None = None
     request_location: bool | None = None
-    request_poll: RequestPollInfo | None = None
-    request_peer: RequestUserInfo | RequestChannelInfo | RequestChatInfo | None = None
+    request_poll: KeyboardButtonPollType | None = None
+    request_users: KeyboardButtonRequestUsers | None = None
+    request_chat: KeyboardButtonRequestChat | None = None
     web_app: WebAppInfo | None = None
 
     def __post_init__(self):
         super().__post_init__()
         super(KeyboardButton, self).__init__(
-            text=self.text,
-            request_contact=self.request_contact,
-            request_location=self.request_location,
-            request_poll=self.request_poll,
-            request_peer=self.request_peer,
-            web_app=self.web_app,
+            text=self.text, # type: ignore
+            request_contact=self.request_contact, # type: ignore
+            request_location=self.request_location, # type: ignore
+            request_poll=self.request_poll, # type: ignore
+            request_users = self.request_users, # type: ignore
+            request_chat = self.request_chat, # type: ignore
+            web_app=self.web_app, # type: ignore
         )
 
 
 @dataclass
-class ReplyKeyboardRemove(ReplyKeyboardRemove):
+class PyReplyKeyboardRemove(ReplyKeyboardRemove):
     selective: bool | None = None
 
     def __post_init__(self):
-        super().__init__(selective=self.selective)
+        super().__init__(selective=self.selective) # type: ignore
 
 
 @dataclass
-class ForceReply(ForceReply):
+class PyForceReply(ForceReply):
     selective: bool | None = None
     placeholder: str | None = None
 
     def __post_init__(self):
-        super().__init__(selective=self.selective, placeholder=self.placeholder)
+        super().__init__(selective=self.selective, placeholder=self.placeholder) # type: ignore

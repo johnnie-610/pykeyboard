@@ -2,8 +2,9 @@
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+# 
+# This file is part of the pykeyboard-kurigram library
 
-from pyrogram.emoji import *
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dataclasses import dataclass
 from .keyboard_base import KeyboardBase, InlineButton
@@ -23,23 +24,23 @@ class InlineKeyboard(InlineKeyboardMarkup, KeyboardBase):
     @staticmethod
     def _get_locales() -> dict[str, str]:
         return {
-            "be_BY": f"{FLAG_BELARUS} Беларуская",  # Belarusian - Belarus
-            "de_DE": f"{FLAG_GERMANY} Deutsch",  # German - Germany
-            "zh_CN": f"{FLAG_CHINA} 中文",  # Chinese - China
-            "en_US": f"{FLAG_UNITED_KINGDOM}  English",  # English - United States
-            "fr_FR": f"{FLAG_FRANCE} Français",  # French - France
-            "id_ID": f"{FLAG_INDONESIA} Bahasa Indonesia",  # Indonesian - Indonesia
-            "it_IT": f"{FLAG_ITALY} Italiano",  # Italian - Italy
-            "ko_KR": f"{FLAG_SOUTH_KOREA} 한국어",  # Korean - Korea
-            "tr_TR": f"{FLAG_TURKEY} Türkçe",  # Turkish - Turkey
-            "ru_RU": f"{FLAG_RUSSIA} Русский",  # Russian - Russia
-            "es_ES": f"{FLAG_SPAIN} Español",  # Spanish - Spain
-            "uk_UA": f"{FLAG_UKRAINE} Українська",  # Ukrainian - Ukraine
-            "uz_UZ": f"{FLAG_UZBEKISTAN} Oʻzbekcha",  # Uzbek - Uzbekistan
+            "be_BY": f"🇧🇾 Беларуская",  # Belarusian - Belarus
+            "de_DE": f"🇩🇪 Deutsch",  # German - Germany
+            "zh_CN": f"🇨🇳 中文",  # Chinese - China
+            "en_US": f"🇬🇧  English",  # English - United Kingdom
+            "fr_FR": f"🇫🇷 Français",  # French - France
+            "id_ID": f"🇮🇩 Bahasa Indonesia",  # Indonesian - Indonesia
+            "it_IT": f"🇮🇹 Italiano",  # Italian - Italy
+            "ko_KR": f"🇰🇷 한국어",  # Korean - Korea
+            "tr_TR": f"🇹🇷 Türkçe",  # Turkish - Turkey
+            "ru_RU": f"🇷🇺 Русский",  # Russian - Russia
+            "es_ES": f"🇪🇸 Español",  # Spanish - Spain
+            "uk_UA": f"🇺🇦 Українська",  # Ukrainian - Ukraine
+            "uz_UZ": f"🇺🇿 Oʻzbekcha",  # Uzbek - Uzbekistan
         }
 
     def __post_init__(self):
-        super().__init__(inline_keyboard=self.keyboard)
+        super().__init__(inline_keyboard=self.keyboard) # type: ignore
         self.callback_pattern = ""
         self.count_pages = 0
         self.current_page = 0
@@ -76,7 +77,7 @@ class InlineKeyboard(InlineKeyboardMarkup, KeyboardBase):
         else:
             pagination = self._build_large_pagination()
 
-        self.keyboard.append(pagination)
+        self.keyboard.append(pagination) # type: ignore
 
     def _build_small_pagination(self) -> list[InlineKeyboardButton]:
         return [
@@ -110,12 +111,12 @@ class InlineKeyboard(InlineKeyboardMarkup, KeyboardBase):
                 i = self.count_pages
             else:
                 text = str(i)
-            buttons.append(
+            buttons.append( # type: ignore
                 self._create_button(
                     text=text, callback_data=self.callback_pattern.format(number=i)
                 )
             )
-        return buttons
+        return buttons # type: ignore
 
     def _build_middle_pagination(self) -> list[InlineKeyboardButton]:
         return [

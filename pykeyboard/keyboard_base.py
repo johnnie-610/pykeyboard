@@ -2,6 +2,8 @@
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+# 
+# This file is part of the pykeyboard-kurigram library
 
 from dataclasses import dataclass, field
 from pyrogram.types import InlineKeyboardButton, WebAppInfo, CallbackGame, LoginUrl
@@ -10,7 +12,7 @@ from pyrogram.types import InlineKeyboardButton, WebAppInfo, CallbackGame, Login
 @dataclass
 class KeyboardBase:
     row_width: int = 3
-    keyboard: list[list] = field(default_factory=list)
+    keyboard: list[list] = field(default_factory=list) # type: ignore
 
     def add(self, *args: object) -> None:
         self.keyboard = [
@@ -19,7 +21,7 @@ class KeyboardBase:
         ]
 
     def row(self, *args: object) -> None:
-        self.keyboard.append(list(args))
+        self.keyboard.append(list(args)) # type: ignore
 
 
 @dataclass
@@ -27,7 +29,7 @@ class Button:
     text: str
 
     def __post_init__(self):
-        if not isinstance(self.text, str):
+        if not isinstance(self.text, str): # type: ignore
             raise ValueError("Button text must be a string")
 
 
@@ -41,6 +43,7 @@ class InlineButton(Button, InlineKeyboardButton):
     switch_inline_query: str | None = None
     switch_inline_query_current_chat: str | None = None
     callback_game: CallbackGame | None = None
+    # callback_game_with_password: bytes | None = None
     requires_password: bool | None = None
     pay: bool | None = None
     copy_text: str | None = None
@@ -59,6 +62,6 @@ class InlineButton(Button, InlineKeyboardButton):
             switch_inline_query_current_chat=self.switch_inline_query_current_chat,
             callback_game=self.callback_game,
             requires_password=self.requires_password,
-            pay=self.pay,
-            copy_text=self.copy_text,
+            pay=self.pay, # type: ignore
+            copy_text=self.copy_text, # type: ignore
         )
