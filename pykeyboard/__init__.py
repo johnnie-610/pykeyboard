@@ -4,6 +4,8 @@
 # https://opensource.org/licenses/MIT
 # 
 # This file is part of the pykeyboard-kurigram library
+# 
+# pykeyboard/__init__.py
 
 from .keyboard_base import Button, InlineButton
 from .inline_keyboard import InlineKeyboard

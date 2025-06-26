@@ -4,6 +4,8 @@
 # https://opensource.org/licenses/MIT
 # 
 # This file is part of the pykeyboard-kurigram library
+# 
+# pykeyboard/inline_keyboard.py
 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dataclasses import dataclass

@@ -59,7 +59,9 @@
 
 # What's new?
 
-- Minor changes due to update in Kurigram.
+- Fix minor bugs.
+- Remove the kurigram dependency, you may experiment with other forks such as pyrofork(Not guaranteed to work).
+- You may want to install [kurigram-addons](https://github.com/johnnie-610/kurigram-addons); which also has this version of pykeyboard, and pyrogram_patch (which features FSM and Middlewares)
 
 # Installation
 

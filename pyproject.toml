@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pykeyboard-kurigram"
-version = "0.1.4"
+version = "0.1.5"
 description = "Best Keyboard and Pagination for the Kurigram Library."
 authors = ["Johnnie <expose-bright-coat@duck.com>"]
 license = "MIT"
@@ -11,9 +11,11 @@ packages = [{include = "pykeyboard"}]
 repository = "https://github.com/johnnie-610/pykeyboard"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-kurigram = "^2.1.35"
+python = "^3.9"
 
+
+[tool.poetry.group.dev.dependencies]
+kurigram = "^2.2.6"
 
 [build-system]
 requires = ["poetry-core"]

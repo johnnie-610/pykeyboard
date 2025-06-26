@@ -6,7 +6,7 @@ version = "2.2.6"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["dev"]
 files = [
     {file = "kurigram-2.2.6-py3-none-any.whl", hash = "sha256:0fd245a7117e2b6479149995857c81b93cb19979ddadcf3fc8063dca05465847"},
     {file = "kurigram-2.2.6.tar.gz", hash = "sha256:15b64199a076c12b2c73915f66fb580294ea4ca6c1cba05f33e19a364a569d3d"},
@@ -27,7 +27,7 @@ version = "1.6.1"
 description = "Pure-Python Implementation of the AES block-cipher and common modes of operation"
 optional = false
 python-versions = "*"
-groups = ["main"]
+groups = ["dev"]
 files = [
     {file = "pyaes-1.6.1.tar.gz", hash = "sha256:02c1b1405c38d3c370b085fb952dd8bea3fadcee6411ad99f312cc129c536d8f"},
 ]
@@ -38,7 +38,7 @@ version = "1.7.1"
 description = "A Python SOCKS client module. See https://github.com/Anorov/PySocks for more information."
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-groups = ["main"]
+groups = ["dev"]
 files = [
     {file = "PySocks-1.7.1-py27-none-any.whl", hash = "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299"},
     {file = "PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5"},
@@ -48,4 +48,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "d5db3cdc31a78a39d3ae54add35e22bb08b3663dede765e6c18e758b6a104dde"
+content-hash = "6d5e57a9ce2c4dca9aa318a9036738cb84c9d46a033cd6398482a28907cecf5a"
