@@ -5,18 +5,64 @@ description = "Best Keyboard and Pagination for the Kurigram Library."
 authors = ["Johnnie <expose-bright-coat@duck.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "pykeyboard"}]
+packages = [{ include = "pykeyboard" }]
 
 [tool.poetry.urls]
 repository = "https://github.com/johnnie-610/pykeyboard"
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pydantic = "^2.11.7"
+pydantic-settings = "^2.10.1"
+rich = "^14.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
-kurigram = "^2.2.6"
+ruff = "^0.12.12"
+mypy = "^1.17.1"
+pyright = "^1.1.405"
+pre-commit = "^4.3.0"
+pytest = "^8.4.2"
+pytest-cov = "^6.2.1"
+pytest-asyncio = "^1.1.0"
+safety = "^3.6.1"
+bandit = "^1.8.6"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 80
+target-version = "py312"
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
+ignore = [
+    "E501", # Ignore line length if you want, or remove this line
+]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "build",
+    "dist",
+    "docs",
+    ".idea",
+    ".poetry-cache",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --cov=pykeyboard --cov-report=html --cov-report=term-missing"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+    "keyboard: Keyboard-related tests",
+    "pagination: Pagination-related tests",
+    "locale: Locale-related tests",
+]

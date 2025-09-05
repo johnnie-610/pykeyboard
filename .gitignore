@@ -1,3 +1,8 @@
+# Dev stuff
+x.py
+htmlcov/
+
+
 # PyCharm stuff
 .idea/
 
@@ -109,3 +114,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Poetry
+.poetry-cache
+
+# Pytest
+.pytest_cache
