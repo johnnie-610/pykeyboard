@@ -13,7 +13,7 @@
 
 **Modern, Type-Safe Keyboard Library for Kurigram**
 
-PyKeyboard is a comprehensive Python library for creating beautiful and functional inline and reply keyboards for Telegram bots using [Kurigram](https://github.com/KurimuzonAkuma/pyrogram).
+PyKeyboard is a comprehensive Python library for creating beautiful and functional inline and reply keyboards for Telegram bots using [Kurigram](https://pypi.org/project/kurigram).
 
 ## Installation
 
@@ -23,6 +23,9 @@ pip install pykeyboard-kurigram
 
 # Using poetry
 poetry add pykeyboard-kurigram
+
+# Using uv
+uv add pykeyboard-kurigram
 ```
 
 ## Quick Start
@@ -39,22 +42,12 @@ keyboard.add(
 )
 
 # Use with Kurigram
-await message.reply_text("What do you think?", reply_markup=keyboard.pyrogram_markup)
+await message.reply_text("What do you think?", reply_markup=keyboard)
 ```
-
-## Features
-
-- 🎯 **Full Type Safety** - Built with Pydantic v2 for runtime validation
-- 🌍 **50+ Languages** - Comprehensive locale support with native language names and flags
-- 🧪 **100% Test Coverage** - Extensive test suite with pytest
-- 📦 **JSON Serialization** - Built-in keyboard serialization/deserialization
-- 🚀 **Modern Python** - Uses latest Python features and best practices
-- 🎨 **Beautiful API** - Intuitive, chainable methods for keyboard construction
-- 🛡️ **Error Handling** - Comprehensive validation with descriptive error messages
 
 ## Documentation
 
-For comprehensive documentation, see the [MkDocs site](https://pykeyboard.readthedocs.io/) or check the `examples.py` file for sequential usage examples.
+For comprehensive documentation, see the [docs](https://johnnie-610.github.io/pykeyboard/) or check the `examples.py` file for sequential usage examples.
 
 ## License
 

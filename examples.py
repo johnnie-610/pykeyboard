@@ -329,6 +329,4 @@ if __name__ == "__main__":
 
     print("All examples created successfully!")
     print("These keyboards can be used with:")
-    print(
-        "await message.reply_text('Choose an option:', reply_markup=keyboard.pyrogram_markup)"
-    )
+    print("await message.reply_text('Choose an option:', reply_markup=keyboard)")
