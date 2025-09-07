@@ -1,10 +1,18 @@
-"""Keyboard visualization and debugging utilities."""
+# Copyright (c) 2025 Johnnie
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+#
+# This file is part of the pykeyboard-kurigram library
+#
+# pykeyboard/visualization.py
 
-from typing import List, Dict, Any, Optional
-from .keyboard_base import KeyboardBase
-from .inline_keyboard import InlineKeyboard
-from .reply_keyboard import ReplyKeyboard
 import json
+from typing import Any, Dict, List, Optional
+
+from .inline_keyboard import InlineKeyboard
+from .keyboard_base import KeyboardBase
+from .reply_keyboard import ReplyKeyboard
 
 
 class KeyboardVisualizer:
@@ -48,7 +56,7 @@ class KeyboardVisualizer:
             for i, button in enumerate(row):
                 if i >= len(max_widths):
                     max_widths.append(0)
-                text = button.text if hasattr(button, 'text') else str(button)
+                text = button.text if hasattr(button, "text") else str(button)
                 max_widths[i] = max(max_widths[i], len(text))
 
         max_widths = [max(w, 3) for w in max_widths]
@@ -61,7 +69,7 @@ class KeyboardVisualizer:
         for row_idx, row in enumerate(keyboard.keyboard):
             row_parts = []
             for i, button in enumerate(row):
-                text = button.text if hasattr(button, 'text') else str(button)
+                text = button.text if hasattr(button, "text") else str(button)
                 width = max_widths[i]
                 row_parts.append(f" {text.center(width)} ")
 
@@ -69,7 +77,9 @@ class KeyboardVisualizer:
             lines.append(row_line)
 
             if row_idx < len(keyboard.keyboard) - 1:
-                separator = "├" + "┼".join("─" * (w + 2) for w in max_widths) + "┤"
+                separator = (
+                    "├" + "┼".join("─" * (w + 2) for w in max_widths) + "┤"
+                )
                 lines.append(separator)
 
         bottom_border = "└" + "┴".join("─" * (w + 2) for w in max_widths) + "┘"
@@ -78,7 +88,9 @@ class KeyboardVisualizer:
         return "\n".join(lines)
 
     @staticmethod
-    def analyze_keyboard(keyboard: InlineKeyboard | ReplyKeyboard) -> Dict[str, Any]:
+    def analyze_keyboard(
+        keyboard: InlineKeyboard | ReplyKeyboard,
+    ) -> Dict[str, Any]:
         """Analyze keyboard structure and provide detailed statistics.
 
         Args:
@@ -101,20 +113,24 @@ class KeyboardVisualizer:
             "row_lengths": [],
             "button_types": {},
             "max_row_length": 0,
-            "min_row_length": float('inf'),
+            "min_row_length": float("inf"),
             "average_row_length": 0,
             "empty_rows": 0,
             "button_texts": [],
             "structure_valid": True,
-            "issues": []
+            "issues": [],
         }
 
         for row_idx, row in enumerate(keyboard.keyboard):
             row_len = len(row)
             analysis["row_lengths"].append(row_len)
             analysis["total_buttons"] += row_len
-            analysis["max_row_length"] = max(analysis["max_row_length"], row_len)
-            analysis["min_row_length"] = min(analysis["min_row_length"], row_len)
+            analysis["max_row_length"] = max(
+                analysis["max_row_length"], row_len
+            )
+            analysis["min_row_length"] = min(
+                analysis["min_row_length"], row_len
+            )
 
             if row_len == 0:
                 analysis["empty_rows"] += 1
@@ -122,15 +138,19 @@ class KeyboardVisualizer:
 
             for button in row:
                 btn_type = type(button).__name__
-                analysis["button_types"][btn_type] = analysis["button_types"].get(btn_type, 0) + 1
+                analysis["button_types"][btn_type] = (
+                    analysis["button_types"].get(btn_type, 0) + 1
+                )
 
-                if hasattr(button, 'text'):
+                if hasattr(button, "text"):
                     analysis["button_texts"].append(button.text)
                 else:
                     analysis["button_texts"].append(str(button))
 
         if analysis["total_buttons"] > 0:
-            analysis["average_row_length"] = analysis["total_buttons"] / analysis["total_rows"]
+            analysis["average_row_length"] = (
+                analysis["total_buttons"] / analysis["total_rows"]
+            )
 
         if analysis["total_buttons"] == 0:
             analysis["issues"].append("Keyboard has no buttons")
@@ -182,32 +202,30 @@ class KeyboardVisualizer:
             "BUTTON TEXTS:",
         ]
 
-        for i, text in enumerate(analysis['button_texts'][:20]):
+        for i, text in enumerate(analysis["button_texts"][:20]):
             report_lines.append(f"  {i+1:2d}. {text}")
-        if len(analysis['button_texts']) > 20:
-            report_lines.append(f"  ... and {len(analysis['button_texts']) - 20} more")
+        if len(analysis["button_texts"]) > 20:
+            report_lines.append(
+                f"  ... and {len(analysis['button_texts']) - 20} more"
+            )
 
-        if analysis['issues']:
-            report_lines.extend([
-                "",
-                "ISSUES FOUND:",
-                *[f"  • {issue}" for issue in analysis['issues']]
-            ])
+        if analysis["issues"]:
+            report_lines.extend(
+                [
+                    "",
+                    "ISSUES FOUND:",
+                    *[f"  • {issue}" for issue in analysis["issues"]],
+                ]
+            )
 
-        report_lines.extend([
-            "",
-            "VISUALIZATION:",
-            visualization,
-            "",
-            "=" * 50
-        ])
+        report_lines.extend(["", "VISUALIZATION:", visualization, "", "=" * 50])
 
         return "\n".join(report_lines)
 
     @staticmethod
     def compare_keyboards(
         keyboard1: InlineKeyboard | ReplyKeyboard,
-        keyboard2: InlineKeyboard | ReplyKeyboard
+        keyboard2: InlineKeyboard | ReplyKeyboard,
     ) -> Dict[str, Any]:
         """Compare two keyboards and highlight differences.
 
@@ -234,12 +252,15 @@ class KeyboardVisualizer:
             "keyboard2_type": analysis2["keyboard_type"],
             "differences": [],
             "similarities": [],
-            "structure_match": True
+            "structure_match": True,
         }
 
         metrics_to_compare = [
-            "total_buttons", "total_rows", "max_row_length",
-            "min_row_length", "empty_rows"
+            "total_buttons",
+            "total_rows",
+            "max_row_length",
+            "min_row_length",
+            "empty_rows",
         ]
 
         for metric in metrics_to_compare:
@@ -248,7 +269,9 @@ class KeyboardVisualizer:
                     f"{metric}: {analysis1[metric]} vs {analysis2[metric]}"
                 )
             else:
-                comparison["similarities"].append(f"{metric}: {analysis1[metric]}")
+                comparison["similarities"].append(
+                    f"{metric}: {analysis1[metric]}"
+                )
 
         if analysis1["row_lengths"] != analysis2["row_lengths"]:
             comparison["differences"].append(
@@ -268,8 +291,7 @@ class KeyboardVisualizer:
 
     @staticmethod
     def export_keyboard_data(
-        keyboard: InlineKeyboard | ReplyKeyboard,
-        format: str = "json"
+        keyboard: InlineKeyboard | ReplyKeyboard, format: str = "json"
     ) -> str:
         """Export keyboard data in various formats for debugging.
 
@@ -294,12 +316,17 @@ class KeyboardVisualizer:
         elif format.lower() == "yaml":
             try:
                 import yaml
+
                 data = keyboard.to_dict()
-                return yaml.dump(data, default_flow_style=False, allow_unicode=True)
+                return yaml.dump(
+                    data, default_flow_style=False, allow_unicode=True
+                )
             except ImportError:
                 return "YAML export requires PyYAML: pip install PyYAML"
         else:
-            return f"Unsupported format: {format}. Use 'json', 'yaml', or 'text'."
+            return (
+                f"Unsupported format: {format}. Use 'json', 'yaml', or 'text'."
+            )
 
 
 def visualize(keyboard: InlineKeyboard | ReplyKeyboard) -> str:

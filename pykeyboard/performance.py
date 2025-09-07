@@ -1,13 +1,18 @@
-"""Performance monitoring and benchmarking utilities for PyKeyboard."""
+# Copyright (c) 2025 Johnnie
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+#
+# This file is part of the pykeyboard-kurigram library
+#
+# pykeyboard/performance.py
 
-import time
 import statistics
-from typing import Dict, List, Any, Union, Callable, Optional
-from contextlib import contextmanager
-from .keyboard_base import KeyboardBase
+import time
+from typing import Any, Callable, Dict, List, Optional, Union
+
 from .inline_keyboard import InlineKeyboard
 from .reply_keyboard import ReplyKeyboard
-
 
 
 class KeyboardProfiler:
@@ -30,7 +35,7 @@ class KeyboardProfiler:
         self._memory_measurements: Dict[str, List[int]] = {}
         self._operation_counts: Dict[str, int] = {}
 
-    def start_operation(self, operation_name: str) -> 'OperationTimer':
+    def start_operation(self, operation_name: str) -> "OperationTimer":
         """Start timing an operation.
 
         Args:
@@ -41,7 +46,12 @@ class KeyboardProfiler:
         """
         return OperationTimer(self, operation_name)
 
-    def record_measurement(self, operation_name: str, duration: float, memory_usage: Optional[int] = None):
+    def record_measurement(
+        self,
+        operation_name: str,
+        duration: float,
+        memory_usage: Optional[int] = None,
+    ):
         """Record a performance measurement.
 
         Args:
@@ -58,7 +68,9 @@ class KeyboardProfiler:
                 self._memory_measurements[operation_name] = []
             self._memory_measurements[operation_name].append(memory_usage)
 
-        self._operation_counts[operation_name] = self._operation_counts.get(operation_name, 0) + 1
+        self._operation_counts[operation_name] = (
+            self._operation_counts.get(operation_name, 0) + 1
+        )
 
     def get_operation_stats(self, operation_name: str) -> Dict[str, Any]:
         """Get statistical information for an operation.
@@ -74,23 +86,27 @@ class KeyboardProfiler:
 
         measurements = self._measurements[operation_name]
         stats = {
-            'count': len(measurements),
-            'total_time': sum(measurements),
-            'mean': statistics.mean(measurements),
-            'median': statistics.median(measurements),
-            'min': min(measurements),
-            'max': max(measurements),
-            'stdev': statistics.stdev(measurements) if len(measurements) > 1 else 0,
+            "count": len(measurements),
+            "total_time": sum(measurements),
+            "mean": statistics.mean(measurements),
+            "median": statistics.median(measurements),
+            "min": min(measurements),
+            "max": max(measurements),
+            "stdev": (
+                statistics.stdev(measurements) if len(measurements) > 1 else 0
+            ),
         }
 
         if operation_name in self._memory_measurements:
             memory_measurements = self._memory_measurements[operation_name]
-            stats.update({
-                'memory_mean': statistics.mean(memory_measurements),
-                'memory_median': statistics.median(memory_measurements),
-                'memory_min': min(memory_measurements),
-                'memory_max': max(memory_measurements),
-            })
+            stats.update(
+                {
+                    "memory_mean": statistics.mean(memory_measurements),
+                    "memory_median": statistics.median(memory_measurements),
+                    "memory_min": min(memory_measurements),
+                    "memory_max": max(memory_measurements),
+                }
+            )
 
         return stats
 
@@ -100,9 +116,11 @@ class KeyboardProfiler:
         Returns:
             Dict mapping operation names to their statistics
         """
-        return {op: self.get_operation_stats(op) for op in self._measurements.keys()}
+        return {
+            op: self.get_operation_stats(op) for op in self._measurements.keys()
+        }
 
-    def generate_report(self, format: str = 'text') -> str:
+    def generate_report(self, format: str = "text") -> str:
         """Generate a performance report.
 
         Args:
@@ -113,11 +131,12 @@ class KeyboardProfiler:
         """
         stats = self.get_all_stats()
 
-        if format == 'json':
+        if format == "json":
             import json
+
             return json.dumps(stats, indent=2, default=str)
 
-        elif format == 'markdown':
+        elif format == "markdown":
             return self._format_markdown_report(stats)
 
         else:  # text format
@@ -137,12 +156,16 @@ class KeyboardProfiler:
             lines.append(f"  Median: {op_stats['median']:.4f}s")
             lines.append(f"  Min: {op_stats['min']:.4f}s")
             lines.append(f"  Max: {op_stats['max']:.4f}s")
-            if 'stdev' in op_stats:
+            if "stdev" in op_stats:
                 lines.append(f"  Std Dev: {op_stats['stdev']:.4f}s")
 
-            if 'memory_mean' in op_stats:
-                lines.append(f"  Memory Mean: {op_stats['memory_mean']:.0f} bytes")
-                lines.append(f"  Memory Median: {op_stats['memory_median']:.0f} bytes")
+            if "memory_mean" in op_stats:
+                lines.append(
+                    f"  Memory Mean: {op_stats['memory_mean']:.0f} bytes"
+                )
+                lines.append(
+                    f"  Memory Median: {op_stats['memory_median']:.0f} bytes"
+                )
 
         return "\n".join(lines)
 
@@ -161,17 +184,25 @@ class KeyboardProfiler:
             lines.append(f"- **Median:** {op_stats['median']:.4f}s")
             lines.append(f"- **Min:** {op_stats['min']:.4f}s")
             lines.append(f"- **Max:** {op_stats['max']:.4f}s")
-            if 'stdev' in op_stats:
+            if "stdev" in op_stats:
                 lines.append(f"- **Std Dev:** {op_stats['stdev']:.4f}s")
 
-            if 'memory_mean' in op_stats:
-                lines.append(f"- **Memory Mean:** {op_stats['memory_mean']:.0f} bytes")
-                lines.append(f"- **Memory Median:** {op_stats['memory_median']:.0f} bytes")
+            if "memory_mean" in op_stats:
+                lines.append(
+                    f"- **Memory Mean:** {op_stats['memory_mean']:.0f} bytes"
+                )
+                lines.append(
+                    f"- **Memory Median:** {op_stats['memory_median']:.0f} bytes"
+                )
             lines.append("")
 
         return "\n".join(lines)
 
-    def benchmark_keyboard_creation(self, keyboard_factory: Callable[[], Union[InlineKeyboard, ReplyKeyboard]], iterations: int = 100) -> Dict[str, Any]:
+    def benchmark_keyboard_creation(
+        self,
+        keyboard_factory: Callable[[], Union[InlineKeyboard, ReplyKeyboard]],
+        iterations: int = 100,
+    ) -> Dict[str, Any]:
         """Benchmark keyboard creation performance.
 
         Args:
@@ -181,7 +212,7 @@ class KeyboardProfiler:
         Returns:
             Dict with benchmark results
         """
-        # removed error_context: just run the code block"performance.benchmark_keyboard_creation"):
+
         times = []
 
         for _ in range(iterations):
@@ -192,16 +223,27 @@ class KeyboardProfiler:
 
         # Additional metrics
         keyboard = keyboard_factory()
-        creation_stats.update({
-            'keyboard_type': type(keyboard).__name__,
-            'total_buttons': sum(len(row) for row in keyboard.keyboard),
-            'total_rows': len(keyboard.keyboard),
-            'buttons_per_second': creation_stats['count'] / creation_stats['total_time'] if creation_stats['total_time'] > 0 else 0,
-        })
+        creation_stats.update(
+            {
+                "keyboard_type": type(keyboard).__name__,
+                "total_buttons": sum(len(row) for row in keyboard.keyboard),
+                "total_rows": len(keyboard.keyboard),
+                "buttons_per_second": (
+                    creation_stats["count"] / creation_stats["total_time"]
+                    if creation_stats["total_time"] > 0
+                    else 0
+                ),
+            }
+        )
 
         return creation_stats
 
-    def benchmark_keyboard_operations(self, keyboard: Union[InlineKeyboard, ReplyKeyboard], operations: List[str], iterations: int = 50) -> Dict[str, Dict[str, Any]]:
+    def benchmark_keyboard_operations(
+        self,
+        keyboard: Union[InlineKeyboard, ReplyKeyboard],
+        operations: List[str],
+        iterations: int = 50,
+    ) -> Dict[str, Dict[str, Any]]:
         """Benchmark various keyboard operations.
 
         Args:
@@ -212,29 +254,35 @@ class KeyboardProfiler:
         Returns:
             Dict mapping operation names to their benchmark results
         """
-        # removed error_context: just run the code block"performance.benchmark_keyboard_operations"):
+
         results = {}
 
         for operation in operations:
-                if operation == "serialization":
-                    self._benchmark_serialization(keyboard, iterations)
-                    results[operation] = self.get_operation_stats("serialization")
-                elif operation == "deserialization":
-                    self._benchmark_deserialization(keyboard, iterations)
-                    results[operation] = self.get_operation_stats("deserialization")
-                elif operation == "pyrogram_conversion":
-                    self._benchmark_pyrogram_conversion(keyboard, iterations)
-                    results[operation] = self.get_operation_stats("pyrogram_conversion")
+            if operation == "serialization":
+                self._benchmark_serialization(keyboard, iterations)
+                results[operation] = self.get_operation_stats("serialization")
+            elif operation == "deserialization":
+                self._benchmark_deserialization(keyboard, iterations)
+                results[operation] = self.get_operation_stats("deserialization")
+            elif operation == "pyrogram_conversion":
+                self._benchmark_pyrogram_conversion(keyboard, iterations)
+                results[operation] = self.get_operation_stats(
+                    "pyrogram_conversion"
+                )
 
         return results
 
-    def _benchmark_serialization(self, keyboard: Union[InlineKeyboard, ReplyKeyboard], iterations: int):
+    def _benchmark_serialization(
+        self, keyboard: Union[InlineKeyboard, ReplyKeyboard], iterations: int
+    ):
         """Benchmark keyboard serialization."""
         for _ in range(iterations):
             with self.start_operation("serialization"):
                 json_str = keyboard.to_json()
 
-    def _benchmark_deserialization(self, keyboard: Union[InlineKeyboard, ReplyKeyboard], iterations: int):
+    def _benchmark_deserialization(
+        self, keyboard: Union[InlineKeyboard, ReplyKeyboard], iterations: int
+    ):
         """Benchmark keyboard deserialization."""
         json_str = keyboard.to_json()
         for _ in range(iterations):
@@ -244,7 +292,9 @@ class KeyboardProfiler:
                 else:
                     ReplyKeyboard.from_json(json_str)
 
-    def _benchmark_pyrogram_conversion(self, keyboard: Union[InlineKeyboard, ReplyKeyboard], iterations: int):
+    def _benchmark_pyrogram_conversion(
+        self, keyboard: Union[InlineKeyboard, ReplyKeyboard], iterations: int
+    ):
         """Benchmark Pyrogram markup conversion."""
         for _ in range(iterations):
             with self.start_operation("pyrogram_conversion"):
@@ -272,8 +322,10 @@ class OperationTimer:
 
         # Try to get memory usage (optional)
         try:
-            import psutil
             import os
+
+            import psutil
+
             process = psutil.Process(os.getpid())
             self.memory_start = process.memory_info().rss
         except ImportError:
@@ -289,15 +341,19 @@ class OperationTimer:
             memory_usage = None
             if self.memory_start is not None:
                 try:
-                    import psutil
                     import os
+
+                    import psutil
+
                     process = psutil.Process(os.getpid())
                     memory_end = process.memory_info().rss
                     memory_usage = memory_end - self.memory_start
                 except ImportError:
                     pass
 
-            self.profiler.record_measurement(self.operation_name, duration, memory_usage)
+            self.profiler.record_measurement(
+                self.operation_name, duration, memory_usage
+            )
 
 
 # Global profiler instance
@@ -314,15 +370,20 @@ def profile_operation(operation_name: str):
     Returns:
         Decorated function
     """
+
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
             with default_profiler.start_operation(operation_name):
                 return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
-def get_performance_stats(operation_name: Optional[str] = None) -> Union[Dict[str, Any], Dict[str, Dict[str, Any]]]:
+def get_performance_stats(
+    operation_name: Optional[str] = None,
+) -> Union[Dict[str, Any], Dict[str, Dict[str, Any]]]:
     """Get performance statistics.
 
     Args:
@@ -337,7 +398,7 @@ def get_performance_stats(operation_name: Optional[str] = None) -> Union[Dict[st
         return default_profiler.get_all_stats()
 
 
-def generate_performance_report(format: str = 'text') -> str:
+def generate_performance_report(format: str = "text") -> str:
     """Generate a performance report.
 
     Args:
@@ -349,7 +410,10 @@ def generate_performance_report(format: str = 'text') -> str:
     return default_profiler.generate_report(format)
 
 
-def benchmark_keyboard_creation(keyboard_factory: Callable[[], Union[InlineKeyboard, ReplyKeyboard]], iterations: int = 100) -> Dict[str, Any]:
+def benchmark_keyboard_creation(
+    keyboard_factory: Callable[[], Union[InlineKeyboard, ReplyKeyboard]],
+    iterations: int = 100,
+) -> Dict[str, Any]:
     """Benchmark keyboard creation performance.
 
     Args:
@@ -359,10 +423,16 @@ def benchmark_keyboard_creation(keyboard_factory: Callable[[], Union[InlineKeybo
     Returns:
         Dict with benchmark results
     """
-    return default_profiler.benchmark_keyboard_creation(keyboard_factory, iterations)
+    return default_profiler.benchmark_keyboard_creation(
+        keyboard_factory, iterations
+    )
 
 
-def benchmark_keyboard_operations(keyboard: Union[InlineKeyboard, ReplyKeyboard], operations: List[str], iterations: int = 50) -> Dict[str, Dict[str, Any]]:
+def benchmark_keyboard_operations(
+    keyboard: Union[InlineKeyboard, ReplyKeyboard],
+    operations: List[str],
+    iterations: int = 50,
+) -> Dict[str, Dict[str, Any]]:
     """Benchmark various keyboard operations.
 
     Args:
@@ -373,4 +443,6 @@ def benchmark_keyboard_operations(keyboard: Union[InlineKeyboard, ReplyKeyboard]
     Returns:
         Dict mapping operation names to their benchmark results
     """
-    return default_profiler.benchmark_keyboard_operations(keyboard, operations, iterations)
+    return default_profiler.benchmark_keyboard_operations(
+        keyboard, operations, iterations
+    )

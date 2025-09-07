@@ -1,14 +1,20 @@
-"""Utility functions and modern Python features for PyKeyboard."""
+# Copyright (c) 2025 Johnnie
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+#
+# This file is part of the pykeyboard-kurigram library
+#
+# pykeyboard/utils.py
 
 import sys
-from typing import Union, Any, Dict, List, Literal
 from pathlib import Path
-from .keyboard_base import InlineButton
+from typing import Any, Dict, List, Literal, Union
+
 from .inline_keyboard import InlineKeyboard
-from .reply_keyboard import ReplyKeyboard, ReplyButton
+from .keyboard_base import InlineButton
+from .reply_keyboard import ReplyButton, ReplyKeyboard
 
-
-# Import optional dependencies at module level for better performance
 try:
     import json
 except ImportError:
@@ -26,7 +32,11 @@ def get_python_version() -> tuple[int, int, int]:
     Returns:
         Tuple of (major, minor, micro) version numbers
     """
-    return (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
+    return (
+        sys.version_info.major,
+        sys.version_info.minor,
+        sys.version_info.micro,
+    )
 
 
 def supports_match_case() -> bool:
@@ -56,7 +66,9 @@ def supports_literal_types() -> bool:
     return sys.version_info >= (3, 8)
 
 
-def create_keyboard_from_config(config: Dict[str, Any]) -> Union[InlineKeyboard, ReplyKeyboard]:
+def create_keyboard_from_config(
+    config: Dict[str, Any],
+) -> Union[InlineKeyboard, ReplyKeyboard]:
     """Create a keyboard from a configuration dictionary using modern Python features.
 
     This function demonstrates the use of match/case (Python 3.10+) and other
@@ -71,47 +83,53 @@ def create_keyboard_from_config(config: Dict[str, Any]) -> Union[InlineKeyboard,
     Raises:
         ValueError: If configuration is invalid
     """
-    keyboard_type = config.get('type', 'inline')
+    keyboard_type = config.get("type", "inline")
 
     if supports_match_case():
         match keyboard_type.lower():
-            case 'inline':
+            case "inline":
                 keyboard = InlineKeyboard()
-            case 'reply':
+            case "reply":
                 keyboard = ReplyKeyboard()
             case _:
                 raise ValueError(f"Unsupported keyboard type: {keyboard_type}")
     else:
-        if keyboard_type.lower() == 'inline':
+        if keyboard_type.lower() == "inline":
             keyboard = InlineKeyboard()
-        elif keyboard_type.lower() == 'reply':
+        elif keyboard_type.lower() == "reply":
             keyboard = ReplyKeyboard()
         else:
             raise ValueError(f"Unsupported keyboard type: {keyboard_type}")
 
-    if 'row_width' in config:
-        keyboard.row_width = config['row_width']
+    if "row_width" in config:
+        keyboard.row_width = config["row_width"]
 
-    buttons = config.get('buttons', [])
+    buttons = config.get("buttons", [])
+    button_objects = []
 
     for button_config in buttons:
         if isinstance(button_config, dict):
-            if keyboard_type == 'inline':
+            if keyboard_type == "inline":
                 button = InlineButton(**button_config)
             else:
                 button = ReplyButton(**button_config)
         else:
-            if keyboard_type == 'inline':
+            if keyboard_type == "inline":
                 button = InlineButton(text=str(button_config))
             else:
                 button = ReplyButton(text=str(button_config))
 
-        keyboard.add(button)
+        button_objects.append(button)
+
+    # Add all buttons at once to respect row_width
+    keyboard.add(*button_objects)
 
     return keyboard
 
 
-def get_keyboard_info(keyboard: Union[InlineKeyboard, ReplyKeyboard]) -> Dict[str, Any]:
+def get_keyboard_info(
+    keyboard: Union[InlineKeyboard, ReplyKeyboard],
+) -> Dict[str, Any]:
     """Get comprehensive information about a keyboard using modern typing features.
 
     Args:
@@ -121,34 +139,38 @@ def get_keyboard_info(keyboard: Union[InlineKeyboard, ReplyKeyboard]) -> Dict[st
         Dictionary with keyboard information
     """
     info = {
-        'type': type(keyboard).__name__,
-        'row_width': keyboard.row_width,
-        'total_buttons': sum(len(row) for row in keyboard.keyboard),
-        'total_rows': len(keyboard.keyboard),
-        'python_version': get_python_version(),
-        'features': {
-            'match_case': supports_match_case(),
-            'typing_self': supports_typing_self(),
-            'literal_types': supports_literal_types(),
-        }
+        "type": type(keyboard).__name__,
+        "row_width": keyboard.row_width,
+        "total_buttons": sum(len(row) for row in keyboard.keyboard),
+        "total_rows": len(keyboard.keyboard),
+        "python_version": get_python_version(),
+        "features": {
+            "match_case": supports_match_case(),
+            "typing_self": supports_typing_self(),
+            "literal_types": supports_literal_types(),
+        },
     }
 
     if isinstance(keyboard, InlineKeyboard):
-        info.update({
-            'has_pagination': bool(keyboard.count_pages > 0),
-            'current_page': keyboard.current_page,
-            'total_pages': keyboard.count_pages,
-            'callback_pattern': keyboard.callback_pattern,
-            'custom_locales_count': len(keyboard.custom_locales),
-        })
+        info.update(
+            {
+                "has_pagination": bool(keyboard.count_pages > 0),
+                "current_page": keyboard.current_page,
+                "total_pages": keyboard.count_pages,
+                "callback_pattern": keyboard.callback_pattern,
+                "custom_locales_count": len(keyboard.custom_locales),
+            }
+        )
     elif isinstance(keyboard, ReplyKeyboard):
-        info.update({
-            'is_persistent': keyboard.is_persistent,
-            'resize_keyboard': keyboard.resize_keyboard,
-            'one_time_keyboard': keyboard.one_time_keyboard,
-            'selective': keyboard.selective,
-            'placeholder': keyboard.placeholder,
-        })
+        info.update(
+            {
+                "is_persistent": keyboard.is_persistent,
+                "resize_keyboard": keyboard.resize_keyboard,
+                "one_time_keyboard": keyboard.one_time_keyboard,
+                "selective": keyboard.selective,
+                "placeholder": keyboard.placeholder,
+            }
+        )
 
     return info
 
@@ -166,24 +188,29 @@ def validate_keyboard_config(config: Dict[str, Any]) -> List[str]:
 
     if supports_match_case():
         match config:
-            case {'type': keyboard_type} if keyboard_type not in ['inline', 'reply']:
+            case {"type": keyboard_type} if keyboard_type not in [
+                "inline",
+                "reply",
+            ]:
                 errors.append(f"Invalid keyboard type: {keyboard_type}")
-            case {'row_width': width} if not isinstance(width, int) or width < 1:
+            case {"row_width": width} if (
+                not isinstance(width, int) or width < 1
+            ):
                 errors.append("row_width must be a positive integer")
-            case {'buttons': buttons} if not isinstance(buttons, list):
+            case {"buttons": buttons} if not isinstance(buttons, list):
                 errors.append("buttons must be a list")
             case _:
                 pass
     else:
-        if 'type' in config and config['type'] not in ['inline', 'reply']:
+        if "type" in config and config["type"] not in ["inline", "reply"]:
             errors.append(f"Invalid keyboard type: {config['type']}")
 
-        if 'row_width' in config:
-            width = config['row_width']
+        if "row_width" in config:
+            width = config["row_width"]
             if not isinstance(width, int) or width < 1:
                 errors.append("row_width must be a positive integer")
 
-        if 'buttons' in config and not isinstance(config['buttons'], list):
+        if "buttons" in config and not isinstance(config["buttons"], list):
             errors.append("buttons must be a list")
 
     return errors
@@ -192,7 +219,7 @@ def validate_keyboard_config(config: Dict[str, Any]) -> List[str]:
 def export_keyboard_to_file(
     keyboard: Union[InlineKeyboard, ReplyKeyboard],
     file_path: Union[str, Path],
-    format: Literal['json', 'yaml', 'pickle'] = 'json'
+    format: Literal["json", "yaml", "pickle"] = "json",
 ) -> None:
     """Export a keyboard to a file using modern Python features.
 
@@ -207,33 +234,39 @@ def export_keyboard_to_file(
     """
     file_path = Path(file_path)
 
-    if format == 'json':
+    if format == "json":
         if json is None:
             raise ImportError("json module not available")
         data = keyboard.to_dict()
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
-    elif format == 'yaml':
+    elif format == "yaml":
         try:
             import yaml
+
             data = keyboard.to_dict()
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
         except ImportError:
-            raise ImportError("PyYAML is required for YAML export. Install with: pip install PyYAML")
+            raise ImportError(
+                "PyYAML is required for YAML export. Install with: pip install PyYAML"
+            )
 
-    elif format == 'pickle':
+    elif format == "pickle":
         if pickle is None:
             raise ImportError("pickle module not available")
-        with open(file_path, 'wb') as f:
+        with open(file_path, "wb") as f:
             pickle.dump(keyboard, f)
-
+    else:
+        raise ValueError(
+            f"Unsupported export format: {format}. Use 'json', 'yaml', or 'pickle'."
+        )
 
 
 def import_keyboard_from_file(
     file_path: Union[str, Path],
-    format: Literal['json', 'yaml', 'pickle'] = 'json'
+    format: Literal["json", "yaml", "pickle"] = "json",
 ) -> Union[InlineKeyboard, ReplyKeyboard]:
     """Import a keyboard from a file using modern Python features.
 
@@ -250,39 +283,59 @@ def import_keyboard_from_file(
     """
     file_path = Path(file_path)
 
-    if format == 'json':
+    if format == "json":
         if json is None:
             raise ImportError("json module not available")
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        if 'callback_pattern' in data:
+        if "callback_pattern" in data:
             return InlineKeyboard.from_dict(data)
         else:
-            pass
+            return ReplyKeyboard.from_dict(data)
 
-    elif format == 'yaml':
+    elif format == "yaml":
         try:
             import yaml
-            with open(file_path, 'r', encoding='utf-8') as f:
+
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
-            if 'callback_pattern' in data:
+            if "callback_pattern" in data:
                 return InlineKeyboard.from_dict(data)
             else:
-                pass
+                return ReplyKeyboard.from_dict(data)
         except ImportError:
-            raise ImportError("PyYAML is required for YAML import. Install with: pip install PyYAML")
+            raise ImportError(
+                "PyYAML is required for YAML import. Install with: pip install PyYAML"
+            )
 
-    elif format == 'pickle':
+    elif format == "pickle":
         if pickle is None:
             raise ImportError("pickle module not available")
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             return pickle.load(f)
+    else:
+        raise ValueError(
+            f"Unsupported import format: {format}. Use 'json', 'yaml', or 'pickle'."
+        )
+
+
+def demonstrate_modern_features() -> Dict[str, Any]:
+    """Demonstrate modern Python features usage in the library.
+
+    Returns:
+        Dictionary with information about Python version and supported features
+    """
+    return {
+        "python_version": get_python_version(),
+        "match_case": supports_match_case(),
+        "typing_self": supports_typing_self(),
+        "literal_types": supports_literal_types(),
+    }
 
 
 if supports_literal_types():
-    KeyboardType = Literal['inline', 'reply']
-    ExportFormat = Literal['json', 'yaml', 'pickle']
+    KeyboardType = Literal["inline", "reply"]
+    ExportFormat = Literal["json", "yaml", "pickle"]
 else:
     KeyboardType = str
     ExportFormat = str
-

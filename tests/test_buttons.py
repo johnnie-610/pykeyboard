@@ -1,7 +1,9 @@
 """Tests for button functionality and validation."""
 
-import pytest
 import warnings
+
+import pytest
+
 from pykeyboard import InlineButton, ReplyButton
 
 
@@ -22,7 +24,7 @@ class TestInlineButton:
             text="Full Button",
             callback_data="callback",
             url="https://example.com",
-            user_id=12345
+            user_id=12345,
         )
         assert button.text == "Full Button"
         assert button.callback_data == "callback"
@@ -31,7 +33,9 @@ class TestInlineButton:
 
     def test_inline_button_to_pyrogram(self):
         """Test conversion to Pyrogram InlineKeyboardButton."""
-        button = InlineButton(text="Test", callback_data="test", url="https://test.com")
+        button = InlineButton(
+            text="Test", callback_data="test", url="https://test.com"
+        )
         pyrogram_button = button.to_pyrogram()
 
         assert pyrogram_button.text == "Test"
@@ -46,16 +50,23 @@ class TestInlineButton:
 
         # Empty text should raise error
         from pydantic import ValidationError
-        with pytest.raises(ValidationError, match="String should have at least 1 character"):
+
+        with pytest.raises(
+            ValidationError, match="String should have at least 1 character"
+        ):
             InlineButton(text="", callback_data="test")
 
         # Non-string text should raise error
-        with pytest.raises(ValidationError, match="Input should be a valid string"):
+        with pytest.raises(
+            ValidationError, match="Input should be a valid string"
+        ):
             InlineButton(text=123, callback_data="test")  # type: ignore
 
     def test_inline_button_serialization(self):
         """Test button serialization."""
-        button = InlineButton(text="Test", callback_data="test", url="https://test.com")
+        button = InlineButton(
+            text="Test", callback_data="test", url="https://test.com"
+        )
         data = button.model_dump()
 
         assert data["text"] == "Test"
@@ -81,11 +92,16 @@ class TestInlineButton:
             # Check that deprecation warning was issued
             assert len(w) == 1
             assert issubclass(w[0].category, DeprecationWarning)
-            assert "Positional arguments for InlineButton are deprecated" in str(w[0].message)
+            assert (
+                "Positional arguments for InlineButton are deprecated"
+                in str(w[0].message)
+            )
 
     def test_inline_button_positional_constructor_invalid(self):
         """Test positional constructor with invalid arguments."""
-        with pytest.raises(ValueError, match="InlineButton expects 1-2 positional arguments"):
+        with pytest.raises(
+            ValueError, match="InlineButton expects 1-2 positional arguments"
+        ):
             InlineButton("text", "callback", "extra")  # Too many args
 
     def test_inline_button_positional_with_kwargs(self):
@@ -116,9 +132,7 @@ class TestReplyButton:
     def test_reply_button_with_requests(self):
         """Test reply button with request options."""
         button = ReplyButton(
-            text="Contact",
-            request_contact=True,
-            request_location=True
+            text="Contact", request_contact=True, request_location=True
         )
         assert button.text == "Contact"
         assert button.request_contact is True
@@ -140,11 +154,16 @@ class TestReplyButton:
 
         # Empty text should raise error
         from pydantic import ValidationError
-        with pytest.raises(ValidationError, match="String should have at least 1 character"):
+
+        with pytest.raises(
+            ValidationError, match="String should have at least 1 character"
+        ):
             ReplyButton(text="")
 
         # Non-string text should raise error
-        with pytest.raises(ValidationError, match="Input should be a valid string"):
+        with pytest.raises(
+            ValidationError, match="Input should be a valid string"
+        ):
             ReplyButton(text=123)  # type: ignore
 
     def test_reply_button_positional_constructor_deprecated(self):
@@ -159,11 +178,15 @@ class TestReplyButton:
             # Check that deprecation warning was issued
             assert len(w) == 1
             assert issubclass(w[0].category, DeprecationWarning)
-            assert "Positional arguments for ReplyButton are deprecated" in str(w[0].message)
+            assert "Positional arguments for ReplyButton are deprecated" in str(
+                w[0].message
+            )
 
     def test_reply_button_positional_constructor_invalid(self):
         """Test positional constructor with invalid arguments."""
-        with pytest.raises(ValueError, match="ReplyButton expects 1 positional argument"):
+        with pytest.raises(
+            ValueError, match="ReplyButton expects 1 positional argument"
+        ):
             ReplyButton("text", "extra")  # Too many args
 
     def test_reply_button_positional_with_kwargs(self):

@@ -1,6 +1,19 @@
-import traceback
+# Copyright (c) 2025 Johnnie
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+#
+# This file is part of the pykeyboard-kurigram library
+#
+# pykeyboard/erros.py
+
+
+import hashlib
 import inspect
-from typing import Dict, Any, Optional
+import json
+import traceback
+from typing import Any, Dict, Optional, Union
+
 from loguru import logger
 
 
@@ -29,6 +42,7 @@ def capture_traceback_info(skip_frames: int = 0) -> Dict[str, Any]:
 
         try:
             import linecache
+
             line_content = linecache.getline(filename, line_number).strip()
         except:
             line_content = "Could not retrieve source line"
@@ -38,7 +52,7 @@ def capture_traceback_info(skip_frames: int = 0) -> Dict[str, Any]:
             "line": line_number,
             "function": function_name,
             "code": line_content,
-            "traceback": traceback.format_exc()
+            "traceback": traceback.format_exc(),
         }
     except Exception:
         return {}
@@ -62,7 +76,7 @@ class PyKeyboardError(Exception):
         message: str,
         error_code: str = "PYKEYBOARD_ERROR",
         context: Optional[Dict[str, Any]] = None,
-        traceback_info: Optional[Dict[str, Any]] = None
+        traceback_info: Optional[Dict[str, Any]] = None,
     ):
         """Initialize PyKeyboardError with comprehensive error information.
 
@@ -75,7 +89,9 @@ class PyKeyboardError(Exception):
         self.message = message
         self.error_code = error_code
         self.context = context or {}
-        self.traceback_info = traceback_info or capture_traceback_info(skip_frames=1)
+        self.traceback_info = traceback_info or capture_traceback_info(
+            skip_frames=1
+        )
 
         self._log_error()
 
@@ -113,15 +129,17 @@ class PyKeyboardError(Exception):
             "    pass",
             "except PyKeyboardError as e:",
             "    print(e.get_help_message())",
-            "```"
+            "```",
         ]
 
         if self.traceback_info:
-            help_parts.extend([
-                "",
-                f"📍 Location: {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
-                f"Function: {self.traceback_info.get('function', 'unknown')}"
-            ])
+            help_parts.extend(
+                [
+                    "",
+                    f"📍 Location: {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
+                    f"Function: {self.traceback_info.get('function', 'unknown')}",
+                ]
+            )
 
         return "\n".join(help_parts)
 
@@ -142,37 +160,39 @@ class PyKeyboardError(Exception):
         ]
 
         if self.context:
-            report_parts.extend([
-                "",
-                "Context Information:",
-                "-" * 20
-            ])
+            report_parts.extend(["", "Context Information:", "-" * 20])
             for key, value in self.context.items():
                 report_parts.append(f"{key}: {value}")
 
         if self.traceback_info:
-            report_parts.extend([
-                "",
-                "Traceback Information:",
-                "-" * 20,
-                f"File: {self.traceback_info.get('file', 'unknown')}",
-                f"Line: {self.traceback_info.get('line', 0)}",
-                f"Function: {self.traceback_info.get('function', 'unknown')}",
-                f"Code: {self.traceback_info.get('code', 'N/A')}",
-                "",
-                "Full Traceback:",
-                "-" * 15,
-                self.traceback_info.get("traceback", "No traceback available")
-            ])
+            report_parts.extend(
+                [
+                    "",
+                    "Traceback Information:",
+                    "-" * 20,
+                    f"File: {self.traceback_info.get('file', 'unknown')}",
+                    f"Line: {self.traceback_info.get('line', 0)}",
+                    f"Function: {self.traceback_info.get('function', 'unknown')}",
+                    f"Code: {self.traceback_info.get('code', 'N/A')}",
+                    "",
+                    "Full Traceback:",
+                    "-" * 15,
+                    self.traceback_info.get(
+                        "traceback", "No traceback available"
+                    ),
+                ]
+            )
 
-        report_parts.extend([
-            "",
-            "Help & Solutions:",
-            "-" * 15,
-            self.get_help_message(),
-            "",
-            "=" * 60
-        ])
+        report_parts.extend(
+            [
+                "",
+                "Help & Solutions:",
+                "-" * 15,
+                self.get_help_message(),
+                "",
+                "=" * 60,
+            ]
+        )
 
         return "\n".join(report_parts)
 
@@ -190,7 +210,7 @@ class ValidationError(PyKeyboardError):
         invalid_value: Optional[Any] = None,
         expected_type: Optional[str] = None,
         context: Optional[Dict[str, Any]] = None,
-        traceback_info: Optional[Dict[str, Any]] = None
+        traceback_info: Optional[Dict[str, Any]] = None,
     ):
         """Initialize ValidationError with field-specific information.
 
@@ -210,8 +230,13 @@ class ValidationError(PyKeyboardError):
         super().__init__(
             message=message,
             error_code="VALIDATION_ERROR",
-            context=context or {"field": field_name, "value": str(invalid_value), "expected": expected_type},
-            traceback_info=traceback_info
+            context=context
+            or {
+                "field": field_name,
+                "value": str(invalid_value),
+                "expected": expected_type,
+            },
+            traceback_info=traceback_info,
         )
 
     def get_help_message(self) -> str:
@@ -235,15 +260,17 @@ class ValidationError(PyKeyboardError):
             "",
             "# ✅ Correct",
             f"keyboard.{self.field_name} = # Provide a valid {self.expected_type}",
-            "```"
+            "```",
         ]
 
         if self.traceback_info:
-            help_parts.extend([
-                "",
-                f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
-                f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}"
-            ])
+            help_parts.extend(
+                [
+                    "",
+                    f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
+                    f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
+                ]
+            )
 
         return "\n".join(help_parts)
 
@@ -261,7 +288,7 @@ class PaginationError(PyKeyboardError):
         invalid_value: Any,
         reason: str,
         context: Optional[Dict[str, Any]] = None,
-        traceback_info: Optional[Dict[str, Any]] = None
+        traceback_info: Optional[Dict[str, Any]] = None,
     ):
         """Initialize PaginationError with parameter-specific information.
 
@@ -276,13 +303,20 @@ class PaginationError(PyKeyboardError):
         self.invalid_value = invalid_value
         self.reason = reason
 
-        message = f"Pagination parameter '{parameter_name}' is invalid: {reason}"
+        message = (
+            f"Pagination parameter '{parameter_name}' is invalid: {reason}"
+        )
 
         super().__init__(
             message=message,
             error_code="PAGINATION_ERROR",
-            context=context or {"parameter": parameter_name, "value": str(invalid_value), "reason": reason},
-            traceback_info=traceback_info
+            context=context
+            or {
+                "parameter": parameter_name,
+                "value": str(invalid_value),
+                "reason": reason,
+            },
+            traceback_info=traceback_info,
         )
 
     def get_help_message(self) -> str:
@@ -299,42 +333,164 @@ class PaginationError(PyKeyboardError):
 
         # Specific guidance based on parameter
         if self.parameter_name == "count_pages":
-            help_parts.extend([
-                "   1. count_pages must be >= 1",
-                "   2. For single-page content, consider not using pagination",
-                "   3. Maximum supported is 10000 pages"
-            ])
+            help_parts.extend(
+                [
+                    "   1. count_pages must be >= 1",
+                    "   2. For single-page content, consider not using pagination",
+                    "   3. Maximum supported is 10000 pages",
+                ]
+            )
         elif self.parameter_name == "current_page":
-            help_parts.extend([
-                "   1. current_page must be >= 1",
-                "   2. current_page cannot exceed count_pages",
-                "   3. Use 1-based indexing (first page is 1, not 0)"
-            ])
+            help_parts.extend(
+                [
+                    "   1. current_page must be >= 1",
+                    "   2. current_page cannot exceed count_pages",
+                    "   3. Use 1-based indexing (first page is 1, not 0)",
+                ]
+            )
         elif self.parameter_name == "callback_pattern":
-            help_parts.extend([
-                "   1. callback_pattern must contain '{number}' placeholder",
-                "   2. The placeholder will be replaced with page numbers",
-                "   3. Example: 'page_{number}' becomes 'page_1', 'page_2', etc."
-            ])
+            help_parts.extend(
+                [
+                    "   1. callback_pattern must contain '{number}' placeholder",
+                    "   2. The placeholder will be replaced with page numbers",
+                    "   3. Example: 'page_{number}' becomes 'page_1', 'page_2', etc.",
+                ]
+            )
 
-        help_parts.extend([
+        help_parts.extend(
+            [
+                "",
+                "📝 Example:",
+                "```python",
+                "# ❌ Wrong",
+                f"keyboard.paginate({self.invalid_value if self.parameter_name == 'count_pages' else '5'}, {self.invalid_value if self.parameter_name == 'current_page' else '1'}, '{self.invalid_value if self.parameter_name == 'callback_pattern' else 'invalid_pattern'}')",
+                "",
+                "# ✅ Correct",
+                "keyboard.paginate(5, 1, 'page_{number}')  # 5 pages, start at page 1",
+                "```",
+            ]
+        )
+
+        if self.traceback_info:
+            help_parts.extend(
+                [
+                    "",
+                    f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
+                    f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
+                ]
+            )
+
+        return "\n".join(help_parts)
+
+
+class PaginationUnchangedError(PaginationError):
+    """Error raised when pagination keyboard hasn't changed from previous call.
+
+    This error occurs when the automatic duplicate prevention system detects
+    that the same pagination keyboard is being created again, preventing
+    unnecessary MessageNotModifiedError from Telegram.
+    """
+
+    def __init__(
+        self,
+        source: str,
+        keyboard_hash: str,
+        previous_hash: str,
+        context: Optional[Dict[str, Any]] = None,
+        traceback_info: Optional[Dict[str, Any]] = None,
+    ):
+        """Initialize PaginationUnchangedError with duplicate detection information.
+
+        Args:
+            source: The source identifier used for isolation (from contextvar or parameter).
+            keyboard_hash: The SHA256 hash of the current keyboard state.
+            previous_hash: The SHA256 hash of the previous keyboard state.
+            context: Additional context information.
+            traceback_info: Pre-captured traceback information.
+        """
+        self.source = source
+        self.keyboard_hash = keyboard_hash
+        self.previous_hash = previous_hash
+
+        message = f"Pagination keyboard unchanged for source '{source}': duplicate detected"
+
+        super().__init__(
+            parameter_name="keyboard_state",
+            invalid_value=keyboard_hash,
+            reason=f"Keyboard hash matches previous hash ({previous_hash[:16]}...) for source '{source}'",
+            context=context
+            or {
+                "source": source,
+                "current_hash": keyboard_hash,
+                "previous_hash": previous_hash,
+                "hash_match": keyboard_hash == previous_hash,
+            },
+            traceback_info=traceback_info,
+        )
+
+    @staticmethod
+    def get_keyboard_hash(keyboard_data: Union[Dict[str, Any], str]) -> str:
+        """Generate SHA256 hash for keyboard state.
+
+        Args:
+            keyboard_data: Dictionary or string representation of keyboard state.
+
+        Returns:
+            SHA256 hash string of the keyboard data.
+        """
+        if isinstance(keyboard_data, dict):
+            # Sort keys for consistent hashing
+            json_str = json.dumps(
+                keyboard_data, sort_keys=True, separators=(",", ":")
+            )
+        else:
+            # Use string directly for better performance
+            json_str = str(keyboard_data)
+
+        return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
+
+    def get_help_message(self) -> str:
+        """Generate duplicate prevention specific help message."""
+        help_parts = [
+            f"🚨 Pagination Unchanged Error: {self.error_code}",
+            "",
+            f"❓ What happened: The pagination keyboard for source '{self.source}' hasn't changed.",
+            f"   - This prevents Telegram's MessageNotModifiedError",
+            f"   - Source: {self.source}",
+            f"   - Hash: {self.keyboard_hash[:16]}...",
+            "",
+            "🔧 How to fix:",
+            "   1. Through answering callback query, encourage your users to navigate to a different page",
+            "   2. This error is usually handled automatically - no action needed",
+            "   3. If you need to force keyboard update, change pagination parameters",
+            "   4. Use different source parameter for different clients",
+            "   5. Check if contextvar is set correctly for multi-client scenarios",
             "",
             "📝 Example:",
             "```python",
-            "# ❌ Wrong",
-            f"keyboard.paginate({self.invalid_value if self.parameter_name == 'count_pages' else '5'}, {self.invalid_value if self.parameter_name == 'current_page' else '1'}, '{self.invalid_value if self.parameter_name == 'callback_pattern' else 'invalid_pattern'}')",
+            "# Automatic handling (recommended)",
+            "try:",
+            "    keyboard.paginate(5, 1, 'page:{number}')",
+            "except PaginationUnchangedError:",
+            "    # Skip message edit - keyboard hasn't changed",
+            "    pass",
             "",
-            "# ✅ Correct",
-            "keyboard.paginate(5, 1, 'page_{number}')  # 5 pages, start at page 1",
-            "```"
-        ])
+            "# Force update with different parameters",
+            "keyboard.paginate(5, 2, 'page:{number}')  # Different page",
+            "",
+            "# Multi-client with explicit source",
+            "keyboard.paginate(5, 1, 'page:{number}', source='client_123')",
+            "```",
+        ]
 
         if self.traceback_info:
-            help_parts.extend([
-                "",
-                f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
-                f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}"
-            ])
+            help_parts.extend(
+                [
+                    "",
+                    f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
+                    f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
+                ]
+            )
 
         return "\n".join(help_parts)
 
@@ -352,7 +508,7 @@ class LocaleError(PyKeyboardError):
         invalid_value: Optional[Any] = None,
         reason: Optional[str] = None,
         context: Optional[Dict[str, Any]] = None,
-        traceback_info: Optional[Dict[str, Any]] = None
+        traceback_info: Optional[Dict[str, Any]] = None,
     ):
         """Initialize LocaleError with locale-specific information.
 
@@ -372,8 +528,13 @@ class LocaleError(PyKeyboardError):
         super().__init__(
             message=message,
             error_code="LOCALE_ERROR",
-            context=context or {"parameter": parameter_name, "value": str(invalid_value), "reason": reason},
-            traceback_info=traceback_info
+            context=context
+            or {
+                "parameter": parameter_name,
+                "value": str(invalid_value),
+                "reason": reason,
+            },
+            traceback_info=traceback_info,
         )
 
     def get_help_message(self) -> str:
@@ -390,47 +551,57 @@ class LocaleError(PyKeyboardError):
 
         # Specific guidance based on parameter
         if self.parameter_name == "callback_pattern":
-            help_parts.extend([
-                "   1. callback_pattern must contain '{locale}' placeholder",
-                "   2. The placeholder will be replaced with locale codes",
-                "   3. Example: 'lang_{locale}' becomes 'lang_en_US', 'lang_fr_FR', etc."
-            ])
+            help_parts.extend(
+                [
+                    "   1. callback_pattern must contain '{locale}' placeholder",
+                    "   2. The placeholder will be replaced with locale codes",
+                    "   3. Example: 'lang_{locale}' becomes 'lang_en_US', 'lang_fr_FR', etc.",
+                ]
+            )
         elif self.parameter_name == "locales":
-            help_parts.extend([
-                "   1. locales must be a non-empty list or string",
-                "   2. Each locale code must be supported by PyKeyboard",
-                "   3. Use get_all_locales() to see available options",
-                "   4. Common formats: 'en_US', 'fr_FR', 'de_DE', 'es_ES'"
-            ])
+            help_parts.extend(
+                [
+                    "   1. locales must be a non-empty list or string",
+                    "   2. Each locale code must be supported by PyKeyboard",
+                    "   3. Use get_all_locales() to see available options",
+                    "   4. Common formats: 'en_US', 'fr_FR', 'de_DE', 'es_ES'",
+                ]
+            )
         elif self.parameter_name == "row_width":
-            help_parts.extend([
-                "   1. row_width must be >= 1",
-                "   2. Controls how many language buttons appear per row",
-                "   3. Recommended: 2-3 for mobile, 3-5 for desktop"
-            ])
+            help_parts.extend(
+                [
+                    "   1. row_width must be >= 1",
+                    "   2. Controls how many language buttons appear per row",
+                    "   3. Recommended: 2-3 for mobile, 3-5 for desktop",
+                ]
+            )
 
-        help_parts.extend([
-            "",
-            "📝 Example:",
-            "```python",
-            "# ❌ Wrong",
-            f"keyboard.languages('{self.invalid_value if self.parameter_name == 'callback_pattern' else 'lang_{locale}'}', {repr(self.invalid_value) if self.parameter_name == 'locales' else ['en_US', 'fr_FR']})",
-            "",
-            "# ✅ Correct",
-            "keyboard.languages('lang_{locale}', ['en_US', 'fr_FR', 'de_DE'])",
-            "",
-            "# Get available locales:",
-            "locales = keyboard.get_all_locales()",
-            "print(list(locales.keys())[:5])  # First 5 available locales",
-            "```"
-        ])
+        help_parts.extend(
+            [
+                "",
+                "📝 Example:",
+                "```python",
+                "# ❌ Wrong",
+                f"keyboard.languages('{self.invalid_value if self.parameter_name == 'callback_pattern' else 'lang_{locale}'}', {repr(self.invalid_value) if self.parameter_name == 'locales' else ['en_US', 'fr_FR']})",
+                "",
+                "# ✅ Correct",
+                "keyboard.languages('lang_{locale}', ['en_US', 'fr_FR', 'de_DE'])",
+                "",
+                "# Get available locales:",
+                "locales = keyboard.get_all_locales()",
+                "print(list(locales.keys())[:5])  # First 5 available locales",
+                "```",
+            ]
+        )
 
         if self.traceback_info:
-            help_parts.extend([
-                "",
-                f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
-                f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}"
-            ])
+            help_parts.extend(
+                [
+                    "",
+                    f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
+                    f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
+                ]
+            )
 
         return "\n".join(help_parts)
 
@@ -448,7 +619,7 @@ class ConfigurationError(PyKeyboardError):
         invalid_value: Any,
         reason: str,
         context: Optional[Dict[str, Any]] = None,
-        traceback_info: Optional[Dict[str, Any]] = None
+        traceback_info: Optional[Dict[str, Any]] = None,
     ):
         """Initialize ConfigurationError with setting-specific information.
 
@@ -468,8 +639,13 @@ class ConfigurationError(PyKeyboardError):
         super().__init__(
             message=message,
             error_code="CONFIG_ERROR",
-            context=context or {"setting": setting_name, "value": str(invalid_value), "reason": reason},
-            traceback_info=traceback_info
+            context=context
+            or {
+                "setting": setting_name,
+                "value": str(invalid_value),
+                "reason": reason,
+            },
+            traceback_info=traceback_info,
         )
 
     def get_help_message(self) -> str:
@@ -505,14 +681,16 @@ class ConfigurationError(PyKeyboardError):
             "• row_width must be >= 1",
             "• callback_pattern must contain required placeholders",
             "• locale codes must be supported",
-            "• pagination parameters must be within valid ranges"
+            "• pagination parameters must be within valid ranges",
         ]
 
         if self.traceback_info:
-            help_parts.extend([
-                "",
-                f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
-                f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}"
-            ])
+            help_parts.extend(
+                [
+                    "",
+                    f"📍 Error occurred in: {self.traceback_info.get('function', 'unknown')}()",
+                    f"   at {self.traceback_info.get('file', 'unknown')}:{self.traceback_info.get('line', 0)}",
+                ]
+            )
 
         return "\n".join(help_parts)

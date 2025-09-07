@@ -7,19 +7,15 @@
 #
 # pykeyboard/reply_keyboard.py
 
-from typing import Optional, Any
-from pydantic import BaseModel, Field, model_validator, PrivateAttr
-from pyrogram.types import (
-    ReplyKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardRemove,
-    ForceReply,
-    KeyboardButtonPollType,
-    KeyboardButtonRequestUsers,
-    KeyboardButtonRequestChat,
-    WebAppInfo,
-)
-from .keyboard_base import KeyboardBase, Button
+from typing import Any, Optional
+
+from pydantic import BaseModel, Field, PrivateAttr, model_validator
+from pyrogram.types import (ForceReply, KeyboardButton, KeyboardButtonPollType,
+                            KeyboardButtonRequestChat,
+                            KeyboardButtonRequestUsers, ReplyKeyboardMarkup,
+                            ReplyKeyboardRemove, WebAppInfo)
+
+from .keyboard_base import Button, KeyboardBase
 
 
 class ReplyKeyboard(KeyboardBase):
@@ -49,16 +45,26 @@ class ReplyKeyboard(KeyboardBase):
         >>> await message.reply_text("What do you think?", reply_markup=keyboard.pyrogram_markup)
     """
 
-    is_persistent: Optional[bool] = Field(None, description="Whether the keyboard is persistent")
-    resize_keyboard: Optional[bool] = Field(None, description="Whether to resize the keyboard")
-    one_time_keyboard: Optional[bool] = Field(None, description="Whether it's a one-time keyboard")
-    selective: Optional[bool] = Field(None, description="Whether the keyboard is selective")
-    placeholder: Optional[str] = Field(None, description="Placeholder text for the input field")
+    is_persistent: Optional[bool] = Field(
+        None, description="Whether the keyboard is persistent"
+    )
+    resize_keyboard: Optional[bool] = Field(
+        None, description="Whether to resize the keyboard"
+    )
+    one_time_keyboard: Optional[bool] = Field(
+        None, description="Whether it's a one-time keyboard"
+    )
+    selective: Optional[bool] = Field(
+        None, description="Whether the keyboard is selective"
+    )
+    placeholder: Optional[str] = Field(
+        None, description="Placeholder text for the input field"
+    )
 
     pyrogram_markup: Optional[ReplyKeyboardMarkup] = PrivateAttr(default=None)
 
-    @model_validator(mode='after')
-    def initialize_pyrogram_markup(self) -> 'ReplyKeyboard':
+    @model_validator(mode="after")
+    def initialize_pyrogram_markup(self) -> "ReplyKeyboard":
         """Initialize the Pyrogram ReplyKeyboardMarkup after model creation."""
         self.pyrogram_markup = ReplyKeyboardMarkup(
             keyboard=self.keyboard,
@@ -93,6 +99,30 @@ class ReplyKeyboard(KeyboardBase):
     def write(self, client: Any = None) -> Any:
         """Pyrogram serialization hook to allow passing this object directly as reply_markup."""
         return self.pyrogram_markup.write(client)
+
+    def to_dict(self) -> dict:
+        """Convert keyboard to dictionary representation for serialization."""
+        return self.model_dump()
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ReplyKeyboard":
+        """Create keyboard instance from dictionary representation.
+
+        Deserializes a keyboard from a dictionary created by to_dict().
+        This method validates the input data and reconstructs the keyboard
+        with all its state and configuration.
+
+        Args:
+            data: Dictionary representation of a keyboard, typically created
+                by to_dict().
+
+        Returns:
+            ReplyKeyboard: Reconstructed keyboard instance.
+
+        Raises:
+            ValidationError: If the input data is invalid or malformed.
+        """
+        return cls.model_validate(data)
 
 
 class ReplyButton(Button):
@@ -168,11 +198,11 @@ class ReplyButton(Button):
                 "Positional arguments for ReplyButton are deprecated. "
                 "Use keyword arguments instead: ReplyButton(text='...')",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
             if len(args) == 1:
-                kwargs.setdefault('text', args[0])
+                kwargs.setdefault("text", args[0])
             else:
                 raise ValueError(
                     f"ReplyButton expects 1 positional argument, got {len(args)}. "
@@ -181,11 +211,21 @@ class ReplyButton(Button):
 
         super().__init__(**kwargs)
 
-    request_contact: Optional[bool] = Field(None, description="Request contact information")
-    request_location: Optional[bool] = Field(None, description="Request location information")
-    request_poll: Optional[KeyboardButtonPollType] = Field(None, description="Request poll")
-    request_users: Optional[KeyboardButtonRequestUsers] = Field(None, description="Request users")
-    request_chat: Optional[KeyboardButtonRequestChat] = Field(None, description="Request chat")
+    request_contact: Optional[bool] = Field(
+        None, description="Request contact information"
+    )
+    request_location: Optional[bool] = Field(
+        None, description="Request location information"
+    )
+    request_poll: Optional[KeyboardButtonPollType] = Field(
+        None, description="Request poll"
+    )
+    request_users: Optional[KeyboardButtonRequestUsers] = Field(
+        None, description="Request users"
+    )
+    request_chat: Optional[KeyboardButtonRequestChat] = Field(
+        None, description="Request chat"
+    )
     web_app: Optional[WebAppInfo] = Field(None, description="Web app to open")
 
     def to_pyrogram(self) -> KeyboardButton:
@@ -251,7 +291,9 @@ class PyReplyKeyboardRemove(BaseModel):
         >>> await message.reply_text("Keyboard removed", reply_markup=remove_all.to_pyrogram())
     """
 
-    selective: Optional[bool] = Field(None, description="Whether the action is selective")
+    selective: Optional[bool] = Field(
+        None, description="Whether the action is selective"
+    )
 
     def to_pyrogram(self) -> ReplyKeyboardRemove:
         """Convert to Pyrogram ReplyKeyboardRemove.
@@ -296,8 +338,12 @@ class PyForceReply(BaseModel):
         >>> await message.reply_text("Please reply", reply_markup=force_all.to_pyrogram())
     """
 
-    selective: Optional[bool] = Field(None, description="Whether the action is selective")
-    placeholder: Optional[str] = Field(None, description="Placeholder text for the input field")
+    selective: Optional[bool] = Field(
+        None, description="Whether the action is selective"
+    )
+    placeholder: Optional[str] = Field(
+        None, description="Placeholder text for the input field"
+    )
 
     def to_pyrogram(self) -> ForceReply:
         """Convert to Pyrogram ForceReply.
@@ -311,7 +357,9 @@ class PyForceReply(BaseModel):
             >>> force_reply = PyForceReply(placeholder="Type your response...")
             >>> pyrogram_force = force_reply.to_pyrogram()
         """
-        return ForceReply(selective=self.selective, placeholder=self.placeholder)
+        return ForceReply(
+            selective=self.selective, placeholder=self.placeholder
+        )
 
     def write(self, client: Any = None) -> Any:
         """Pyrogram serialization hook to allow passing this object directly as reply_markup."""
@@ -320,6 +368,7 @@ class PyForceReply(BaseModel):
 
 def _add_serialization_methods(cls):
     """Add JSON serialization methods to keyboard classes."""
+
     def to_json(self) -> str:
         """Convert keyboard to JSON string.
 

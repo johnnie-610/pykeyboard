@@ -1,15 +1,26 @@
-"""Custom validation hooks for keyboard construction and validation."""
+# Copyright (c) 2025 Johnnie
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+#
+# This file is part of the pykeyboard-kurigram library
+#
+# pykeyboard/hooks.py
 
-from typing import List, Dict, Any, Callable, Union, Optional, Protocol
-from .keyboard_base import KeyboardBase
+import re
+from typing import Any, Callable, Dict, List, Optional, Protocol, Union
+
 from .inline_keyboard import InlineKeyboard
+from .keyboard_base import KeyboardBase
 from .reply_keyboard import ReplyKeyboard
 
 
 class ValidationHook(Protocol):
     """Protocol for validation hook functions."""
 
-    def __call__(self, button: Any, context: Optional[Dict[str, Any]] = None) -> bool:
+    def __call__(
+        self, button: Any, context: Optional[Dict[str, Any]] = None
+    ) -> bool:
         """Validate a button.
 
         Args:
@@ -44,7 +55,9 @@ class ButtonValidator:
 
     def __init__(self):
         """Initialize the validator with default rules."""
-        self._rules: Dict[str, Callable[[Any, Optional[Dict[str, Any]]], bool]] = {}
+        self._rules: Dict[
+            str, Callable[[Any, Optional[Dict[str, Any]]], bool]
+        ] = {}
         self._error_messages: Dict[str, str] = {}
         self._suggestions: Dict[str, str] = {}
         self._context_validators: List[Callable[[Dict[str, Any]], bool]] = []
@@ -58,36 +71,42 @@ class ButtonValidator:
             "text_not_empty",
             lambda btn, ctx: bool(btn.text and btn.text.strip()),
             "Button text cannot be empty",
-            "Add meaningful text to the button"
+            "Add meaningful text to the button",
         )
 
         self.add_rule(
             "text_length",
             lambda btn, ctx: len(btn.text) <= 50,
             "Button text is too long (max 50 characters)",
-            "Shorten the button text or use abbreviations"
+            "Shorten the button text or use abbreviations",
         )
 
         self.add_rule(
             "callback_data_format",
             lambda btn, ctx: (
-                not hasattr(btn, 'callback_data') or
-                btn.callback_data is None or
-                (isinstance(btn.callback_data, str) and len(btn.callback_data) <= 64)
+                not hasattr(btn, "callback_data")
+                or btn.callback_data is None
+                or (
+                    isinstance(btn.callback_data, str)
+                    and len(btn.callback_data) <= 64
+                )
             ),
             "Callback data is too long (max 64 characters)",
-            "Use shorter callback data or implement a mapping system"
+            "Use shorter callback data or implement a mapping system",
         )
 
         self.add_rule(
             "url_format",
             lambda btn, ctx: (
-                not hasattr(btn, 'url') or
-                btn.url is None or
-                (isinstance(btn.url, str) and btn.url.startswith(('http://', 'https://', 'tg://')))
+                not hasattr(btn, "url")
+                or btn.url is None
+                or (
+                    isinstance(btn.url, str)
+                    and btn.url.startswith(("http://", "https://", "tg://"))
+                )
             ),
             "URL must start with http://, https://, or tg://",
-            "Use a valid URL format"
+            "Use a valid URL format",
         )
 
     def add_rule(
@@ -95,8 +114,8 @@ class ButtonValidator:
         name: str,
         validator: Callable[[Any, Optional[Dict[str, Any]]], bool],
         error_message: str = "",
-        suggestion: str = ""
-    ) -> 'ButtonValidator':
+        suggestion: str = "",
+    ) -> "ButtonValidator":
         """Add a custom validation rule.
 
         Args:
@@ -139,7 +158,9 @@ class ButtonValidator:
             return True
         return False
 
-    def add_context_validator(self, validator: Callable[[Dict[str, Any]], bool]) -> 'ButtonValidator':
+    def add_context_validator(
+        self, validator: Callable[[Dict[str, Any]], bool]
+    ) -> "ButtonValidator":
         """Add a context validator that runs on the entire keyboard context.
 
         Args:
@@ -160,7 +181,7 @@ class ButtonValidator:
         self,
         button: Any,
         context: Optional[Dict[str, Any]] = None,
-        skip_rules: Optional[List[str]] = None
+        skip_rules: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Validate a single button against all rules.
 
@@ -188,7 +209,9 @@ class ButtonValidator:
 
             try:
                 if not validator_func(button, context):
-                    error_msg = self._error_messages.get(rule_name, f"Failed rule: {rule_name}")
+                    error_msg = self._error_messages.get(
+                        rule_name, f"Failed rule: {rule_name}"
+                    )
                     errors.append(error_msg)
 
                     suggestion = self._suggestions.get(rule_name)
@@ -198,17 +221,17 @@ class ButtonValidator:
                 warnings.append(f"Rule '{rule_name}' raised exception: {e}")
 
         return {
-            'is_valid': len(errors) == 0,
-            'errors': errors,
-            'warnings': warnings,
-            'suggestions': suggestions,
-            'checked_rules': len(self._rules) - len(skip_rules)
+            "is_valid": len(errors) == 0,
+            "errors": errors,
+            "warnings": warnings,
+            "suggestions": suggestions,
+            "checked_rules": len(self._rules) - len(skip_rules),
         }
 
     def validate_keyboard(
         self,
         keyboard: Union[InlineKeyboard, ReplyKeyboard],
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Validate an entire keyboard.
 
@@ -224,11 +247,13 @@ class ButtonValidator:
             >>> print(f"Valid buttons: {result['valid_buttons']}/{result['total_buttons']}")
         """
         context = context or {}
-        context.update({
-            'keyboard_type': type(keyboard).__name__,
-            'total_rows': len(keyboard.keyboard),
-            'total_buttons': sum(len(row) for row in keyboard.keyboard)
-        })
+        context.update(
+            {
+                "keyboard_type": type(keyboard).__name__,
+                "total_rows": len(keyboard.keyboard),
+                "total_buttons": sum(len(row) for row in keyboard.keyboard),
+            }
+        )
 
         context_errors = []
         for validator in self._context_validators:
@@ -245,14 +270,18 @@ class ButtonValidator:
         for row_idx, row in enumerate(keyboard.keyboard):
             for btn_idx, button in enumerate(row):
                 total_buttons += 1
-                result = self.validate_button(button, {**context, 'row': row_idx, 'col': btn_idx})
-                button_results.append({
-                    'row': row_idx,
-                    'col': btn_idx,
-                    'button': button,
-                    'result': result
-                })
-                if result['is_valid']:
+                result = self.validate_button(
+                    button, {**context, "row": row_idx, "col": btn_idx}
+                )
+                button_results.append(
+                    {
+                        "row": row_idx,
+                        "col": btn_idx,
+                        "button": button,
+                        "result": result,
+                    }
+                )
+                if result["is_valid"]:
                     valid_buttons += 1
 
         all_errors = []
@@ -260,22 +289,22 @@ class ButtonValidator:
         all_suggestions = []
 
         for result in button_results:
-            all_errors.extend(result['result']['errors'])
-            all_warnings.extend(result['result']['warnings'])
-            all_suggestions.extend(result['result']['suggestions'])
+            all_errors.extend(result["result"]["errors"])
+            all_warnings.extend(result["result"]["warnings"])
+            all_suggestions.extend(result["result"]["suggestions"])
 
         all_errors.extend(context_errors)
 
         return {
-            'is_valid': len(all_errors) == 0 and valid_buttons == total_buttons,
-            'total_buttons': total_buttons,
-            'valid_buttons': valid_buttons,
-            'invalid_buttons': total_buttons - valid_buttons,
-            'errors': all_errors,
-            'warnings': all_warnings,
-            'suggestions': all_suggestions,
-            'button_results': button_results,
-            'context_errors': context_errors
+            "is_valid": len(all_errors) == 0 and valid_buttons == total_buttons,
+            "total_buttons": total_buttons,
+            "valid_buttons": valid_buttons,
+            "invalid_buttons": total_buttons - valid_buttons,
+            "errors": all_errors,
+            "warnings": all_warnings,
+            "suggestions": all_suggestions,
+            "button_results": button_results,
+            "context_errors": context_errors,
         }
 
 
@@ -306,7 +335,9 @@ class KeyboardHookManager:
         self._button_hooks: List[Callable[[Any], Any]] = []
         self._error_hooks: List[Callable[[Exception, KeyboardBase], None]] = []
 
-    def add_pre_hook(self, hook: Callable[[KeyboardBase], None]) -> 'KeyboardHookManager':
+    def add_pre_hook(
+        self, hook: Callable[[KeyboardBase], None]
+    ) -> "KeyboardHookManager":
         """Add a hook that runs before keyboard construction.
 
         Args:
@@ -318,7 +349,9 @@ class KeyboardHookManager:
         self._pre_hooks.append(hook)
         return self
 
-    def add_post_hook(self, hook: Callable[[KeyboardBase], None]) -> 'KeyboardHookManager':
+    def add_post_hook(
+        self, hook: Callable[[KeyboardBase], None]
+    ) -> "KeyboardHookManager":
         """Add a hook that runs after keyboard construction.
 
         Args:
@@ -330,7 +363,9 @@ class KeyboardHookManager:
         self._post_hooks.append(hook)
         return self
 
-    def add_button_hook(self, hook: Callable[[Any], Any]) -> 'KeyboardHookManager':
+    def add_button_hook(
+        self, hook: Callable[[Any], Any]
+    ) -> "KeyboardHookManager":
         """Add a hook that transforms buttons during construction.
 
         Args:
@@ -342,7 +377,9 @@ class KeyboardHookManager:
         self._button_hooks.append(hook)
         return self
 
-    def add_error_hook(self, hook: Callable[[Exception, KeyboardBase], None]) -> 'KeyboardHookManager':
+    def add_error_hook(
+        self, hook: Callable[[Exception, KeyboardBase], None]
+    ) -> "KeyboardHookManager":
         """Add a hook that handles errors during construction.
 
         Args:
@@ -411,7 +448,9 @@ default_validator = ButtonValidator()
 default_hook_manager = KeyboardHookManager()
 
 
-def validate_button(button: Any, context: Optional[Dict[str, Any]] = None) -> bool:
+def validate_button(
+    button: Any, context: Optional[Dict[str, Any]] = None
+) -> bool:
     """Convenience function to validate a button with default validator.
 
     Args:
@@ -422,10 +461,12 @@ def validate_button(button: Any, context: Optional[Dict[str, Any]] = None) -> bo
         True if valid, False otherwise
     """
     result = default_validator.validate_button(button, context)
-    return result['is_valid']
+    return result["is_valid"]
 
 
-def validate_keyboard(keyboard: Union[InlineKeyboard, ReplyKeyboard]) -> Dict[str, Any]:
+def validate_keyboard(
+    keyboard: Union[InlineKeyboard, ReplyKeyboard],
+) -> Dict[str, Any]:
     """Convenience function to validate a keyboard with default validator.
 
     Args:
@@ -441,7 +482,7 @@ def add_validation_rule(
     name: str,
     validator: Callable[[Any, Optional[Dict[str, Any]]], bool],
     error_message: str = "",
-    suggestion: str = ""
+    suggestion: str = "",
 ) -> None:
     """Convenience function to add a validation rule to the default validator.
 
@@ -464,13 +505,15 @@ def add_keyboard_hook(hook_type: str, hook: Callable) -> None:
     Raises:
         ValueError: If hook_type is invalid
     """
-    if hook_type == 'pre':
+    if hook_type == "pre":
         default_hook_manager.add_pre_hook(hook)
-    elif hook_type == 'post':
+    elif hook_type == "post":
         default_hook_manager.add_post_hook(hook)
-    elif hook_type == 'button':
+    elif hook_type == "button":
         default_hook_manager.add_button_hook(hook)
-    elif hook_type == 'error':
+    elif hook_type == "error":
         default_hook_manager.add_error_hook(hook)
     else:
-        raise ValueError(f"Invalid hook type: {hook_type}. Use 'pre', 'post', 'button', or 'error'")
+        raise ValueError(
+            f"Invalid hook type: {hook_type}. Use 'pre', 'post', 'button', or 'error'"
+        )

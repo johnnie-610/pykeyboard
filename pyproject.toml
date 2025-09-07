@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pykeyboard-kurigram"
-version = "0.1.5"
+version = "0.2.0"
 description = "Best Keyboard and Pagination for the Kurigram Library."
 authors = ["Johnnie <expose-bright-coat@duck.com>"]
 license = "MIT"
@@ -13,43 +13,33 @@ repository = "https://github.com/johnnie-610/pykeyboard"
 [tool.poetry.dependencies]
 python = "^3.9"
 pydantic = "^2.11.7"
-pydantic-settings = "^2.10.1"
-rich = "^14.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.12.12"
-mypy = "^1.17.1"
-pyright = "^1.1.405"
 pre-commit = "^4.3.0"
 pytest = "^8.4.2"
-pytest-cov = "^6.2.1"
+pytest-cov = "^6.3.0"
 pytest-asyncio = "^1.1.0"
-safety = "^3.6.1"
-bandit = "^1.8.6"
+kurigram = "^2.2.10"
+loguru = "^0.7.3"
+mkdocs-material = {extras = ["plugins"], version = "^9.6.19"}
+mkdocs-minify-plugin = "^0.8.0"
+mkdocs-git-revision-date-localized-plugin = "^1.4.7"
+mkdocs-git-committers-plugin = "^0.2.3"
+black = "^25.1.0"
+isort = "^6.0.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.ruff]
+[tool.black]
 line-length = 80
-target-version = "py312"
-select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
-ignore = [
-    "E501", # Ignore line length if you want, or remove this line
-]
-exclude = [
-    ".git",
-    ".mypy_cache",
-    ".ruff_cache",
-    ".venv",
-    "build",
-    "dist",
-    "docs",
-    ".idea",
-    ".poetry-cache",
-]
+target-version = ["py39", "py310", "py311", "py312", "py313"]
+
+[tool.isort]
+line_length = 80
+
 
 [tool.pytest.ini_options]
 minversion = "8.0"

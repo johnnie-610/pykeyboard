@@ -36,13 +36,18 @@ Classes:
 For more information, visit: https://github.com/johnnie-610/pykeyboard
 """
 
+from .inline_keyboard import InlineKeyboard, pagination_client_context
 from .keyboard_base import Button, InlineButton
-from .inline_keyboard import InlineKeyboard
-from .reply_keyboard import ReplyKeyboard, ReplyButton, PyReplyKeyboardRemove as ReplyKeyboardRemove, PyForceReply as ForceReply
+from .reply_keyboard import PyForceReply as ForceReply
+from .reply_keyboard import PyReplyKeyboardRemove as ReplyKeyboardRemove
+from .reply_keyboard import ReplyButton, ReplyKeyboard
 
 # Builder and factory utilities
 try:
-    from .builder import KeyboardBuilder, KeyboardFactory, build_inline_keyboard, build_reply_keyboard, keyboard_factory
+    from .builder import (KeyboardBuilder, KeyboardFactory,
+                          build_inline_keyboard, build_reply_keyboard,
+                          keyboard_factory)
+
     _builder_available = True
 except ImportError:
     _builder_available = False
@@ -54,11 +59,11 @@ except ImportError:
 
 # Validation hooks and middleware
 try:
-    from .hooks import (
-        ButtonValidator, KeyboardHookManager, ValidationHook,
-        validate_button, validate_keyboard, add_validation_rule, add_keyboard_hook,
-        default_validator, default_hook_manager
-    )
+    from .hooks import (ButtonValidator, KeyboardHookManager, ValidationHook,
+                        add_keyboard_hook, add_validation_rule,
+                        default_hook_manager, default_validator,
+                        validate_button, validate_keyboard)
+
     _hooks_available = True
 except ImportError:
     _hooks_available = False
@@ -74,11 +79,10 @@ except ImportError:
 
 # Python utilities
 try:
-    from .utils import (
-        create_keyboard_from_config, get_keyboard_info, validate_keyboard_config,
-        export_keyboard_to_file, import_keyboard_from_file,
-        KeyboardType, ExportFormat
-    )
+    from .utils import (ExportFormat, KeyboardType, create_keyboard_from_config,
+                        export_keyboard_to_file, get_keyboard_info,
+                        import_keyboard_from_file, validate_keyboard_config)
+
     _utils_available = True
 except ImportError:
     _utils_available = False
@@ -92,15 +96,17 @@ except ImportError:
 
 # Error reporting system
 try:
-    from .errors import (
-        PyKeyboardError, ValidationError, PaginationError, LocaleError, ConfigurationError
-    )
+    from .errors import (ConfigurationError, LocaleError, PaginationError,
+                         PaginationUnchangedError, PyKeyboardError,
+                         ValidationError)
+
     _errors_available = True
 except ImportError:
     _errors_available = False
     PyKeyboardError = None
     ValidationError = None
     PaginationError = None
+    PaginationUnchangedError = None
     LocaleError = None
     ConfigurationError = None
 
@@ -115,14 +121,17 @@ __all__ = [
     "ReplyButton",
     "ReplyKeyboardRemove",
     "ForceReply",
-
+    # Context Variables
+    "pagination_client_context",
+    "reset_pagination_client_context",
+    # Hash Management
+    "_pagination_hashes",
     # Builder Pattern
     "KeyboardBuilder",
     "KeyboardFactory",
     "build_inline_keyboard",
     "build_reply_keyboard",
     "keyboard_factory",
-
     # Validation System
     "ButtonValidator",
     "KeyboardHookManager",
@@ -133,7 +142,6 @@ __all__ = [
     "add_keyboard_hook",
     "default_validator",
     "default_hook_manager",
-
     # Modern Python Utilities
     "create_keyboard_from_config",
     "get_keyboard_info",
@@ -142,14 +150,13 @@ __all__ = [
     "import_keyboard_from_file",
     "KeyboardType",
     "ExportFormat",
-
     # Error Reporting System
     "PyKeyboardError",
     "ValidationError",
     "PaginationError",
+    "PaginationUnchangedError",
     "LocaleError",
     "ConfigurationError",
-
 ]
 
 

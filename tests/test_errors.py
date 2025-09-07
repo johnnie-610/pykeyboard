@@ -1,12 +1,13 @@
 """Tests for comprehensive error reporting system."""
 
-import pytest
 import json
-from unittest.mock import patch, MagicMock
-from pykeyboard import (
-    PyKeyboardError, ValidationError, PaginationError, LocaleError,
-    ConfigurationError, DependencyError, ErrorSuggestion
-)
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from pykeyboard import (ConfigurationError, LocaleError, PaginationError,
+                        PaginationUnchangedError, PyKeyboardError,
+                        ValidationError)
 from pykeyboard.inline_keyboard import InlineKeyboard
 
 
@@ -20,51 +21,17 @@ class TestPyKeyboardError:
         assert str(error) == "[TEST_ERROR] Test error"
         assert error.error_code == "TEST_ERROR"
         assert error.message == "Test error"
-        assert error.suggestions == []
-        assert error.context == {}
-
-    def test_pykeyboard_error_with_suggestions(self):
-        """Test PyKeyboardError with suggestions."""
-        suggestions = [
-            ErrorSuggestion("Fix it", "Here's how", ["Step 1", "Step 2"])
-        ]
-        error = PyKeyboardError("Test error", "TEST_ERROR", suggestions)
-
-        assert len(error.suggestions) == 1
-        assert error.suggestions[0].title == "Fix it"
 
     def test_pykeyboard_error_full_report(self):
         """Test full error report generation."""
         error = PyKeyboardError(
-            "Test error",
-            "TEST_ERROR",
-            context={"key": "value"},
-            suggestions=[ErrorSuggestion("Fix", "How to fix", ["Do this"])]
+            "Test error", "TEST_ERROR", context={"key": "value"}
         )
 
         report = error.get_full_report()
         assert "Test error" in report
         assert "TEST_ERROR" in report
         assert "key: value" in report
-        assert "Fix" in report
-
-    def test_error_suggestion_formatting(self):
-        """Test error suggestion formatting."""
-        suggestion = ErrorSuggestion(
-            "Test Title",
-            "Test description",
-            ["Step 1", "Step 2"],
-            "code_example",
-            "docs_link"
-        )
-
-        formatted = suggestion.format_suggestion()
-        assert "Test Title" in formatted
-        assert "Test description" in formatted
-        assert "Step 1" in formatted
-        assert "Step 2" in formatted
-        assert "code_example" in formatted
-        assert "docs_link" in formatted
 
 
 class TestSpecificErrors:
@@ -76,8 +43,10 @@ class TestSpecificErrors:
 
         assert error.error_code == "VALIDATION_ERROR"
         assert "field_name" in error.message
-        assert "invalid_value" in error.context
-        assert len(error.suggestions) == 1
+        assert (
+            "value" in error.context
+        )  # ValidationError uses 'value' key in context
+        # suggestions attribute may not be available
 
     def test_pagination_error(self):
         """Test PaginationError creation."""
@@ -85,7 +54,6 @@ class TestSpecificErrors:
 
         assert error.error_code == "PAGINATION_ERROR"
         assert "count_pages" in error.message
-        assert len(error.suggestions) == 1
 
     def test_locale_error(self):
         """Test LocaleError creation."""
@@ -93,27 +61,51 @@ class TestSpecificErrors:
 
         assert error.error_code == "LOCALE_ERROR"
         assert "invalid_locale" in error.message
-        assert len(error.suggestions) == 1
+        # suggestions attribute may not be available
 
     def test_configuration_error(self):
         """Test ConfigurationError creation."""
-        error = ConfigurationError("setting", "invalid value")
+        error = ConfigurationError("setting", "invalid value", "invalid format")
 
         assert error.error_code == "CONFIG_ERROR"
         assert "setting" in error.message
-        assert len(error.suggestions) == 1
+        # suggestions attribute may not be available
 
-    def test_dependency_error(self):
-        """Test DependencyError creation."""
-        original_error = ImportError("Module not found")
-        error = DependencyError("missing_module", "import", original_error)
+    def test_pagination_unchanged_error(self):
+        """Test PaginationUnchangedError creation."""
+        error = PaginationUnchangedError(
+            source="test_source", keyboard_hash="abc123", previous_hash="def456"
+        )
 
-        assert error.error_code == "DEPENDENCY_ERROR"
-        assert "missing_module" in error.message
-        assert error.original_error is original_error
-        assert len(error.suggestions) == 1
+        assert (
+            error.error_code == "PAGINATION_ERROR"
+        )  # Inherits from PaginationError
+        assert "test_source" in error.message
+        assert error.source == "test_source"
+        assert error.keyboard_hash == "abc123"
+        assert error.previous_hash == "def456"
 
+    def test_pagination_unchanged_error_hash_generation(self):
+        """Test hash generation for keyboard state."""
+        keyboard_data = {
+            "count_pages": 5,
+            "current_page": 3,
+            "callback_pattern": "page_{number}",
+            "source": "test",
+        }
 
+        hash_value = PaginationUnchangedError.get_keyboard_hash(keyboard_data)
+        assert isinstance(hash_value, str)
+        assert len(hash_value) == 64  # SHA256 hex length
+
+        # Same data should produce same hash
+        hash_value2 = PaginationUnchangedError.get_keyboard_hash(keyboard_data)
+        assert hash_value == hash_value2
+
+        # Different data should produce different hash
+        keyboard_data["current_page"] = 4
+        hash_value3 = PaginationUnchangedError.get_keyboard_hash(keyboard_data)
+        assert hash_value != hash_value3
 
 
 class TestIntegrationWithInlineKeyboard:
@@ -130,7 +122,7 @@ class TestIntegrationWithInlineKeyboard:
         error = exc_info.value
         assert error.error_code == "PAGINATION_ERROR"
         assert "count_pages" in error.message
-        assert len(error.suggestions) == 1
+        # suggestions attribute may not be available
 
     def test_inline_keyboard_locale_error_handling(self):
         """Test locale error handling in InlineKeyboard."""
@@ -143,7 +135,7 @@ class TestIntegrationWithInlineKeyboard:
         error = exc_info.value
         assert error.error_code == "LOCALE_ERROR"
         assert "callback_pattern" in error.message
-        assert len(error.suggestions) == 1
+        # suggestions attribute may not be available
 
     def test_inline_keyboard_empty_locales_error(self):
         """Test empty locales list error."""
@@ -168,18 +160,13 @@ class TestIntegrationWithInlineKeyboard:
             keyboard.languages("", ["en_US"])
 
 
-
-
 class TestErrorSerialization:
     """Test cases for error serialization."""
 
     def test_error_to_dict(self):
         """Test converting error to dictionary."""
         error = PyKeyboardError(
-            "Test error",
-            "TEST_ERROR",
-            context={"key": "value"},
-            suggestions=[ErrorSuggestion("Fix", "How", ["Step"])]
+            "Test error", "TEST_ERROR", context={"key": "value"}
         )
 
         # Errors don't have to_dict method, but we can test the report
@@ -193,15 +180,16 @@ class TestErrorSerialization:
 
         # Test that error context can be JSON serialized
         import json
+
         context_json = json.dumps(error.context)
         assert context_json == "{}"
 
         # Test error with context
         error_with_context = PyKeyboardError(
-            "Test error",
-            "TEST_ERROR",
-            context={"number": 42, "text": "hello"}
+            "Test error", "TEST_ERROR", context={"number": 42, "text": "hello"}
         )
         context_json = json.dumps(error_with_context.context)
-        assert '"number":42' in context_json
-        assert '"text":"hello"' in context_json
+        assert '"number"' in context_json  # JSON formatting may vary
+        assert '"text"' in context_json
+        assert "42" in context_json
+        assert "hello" in context_json

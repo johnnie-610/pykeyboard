@@ -1,8 +1,10 @@
 """Pytest configuration and fixtures for pykeyboard tests."""
 
-import pytest
 from typing import List
-from pykeyboard import InlineKeyboard, ReplyKeyboard, InlineButton, ReplyButton
+
+import pytest
+
+from pykeyboard import InlineButton, InlineKeyboard, ReplyButton, ReplyKeyboard
 
 
 @pytest.fixture
@@ -38,7 +40,9 @@ def reply_keyboard() -> ReplyKeyboard:
 
 
 @pytest.fixture
-def populated_inline_keyboard(sample_inline_buttons: List[InlineButton]) -> InlineKeyboard:
+def populated_inline_keyboard(
+    sample_inline_buttons: List[InlineButton],
+) -> InlineKeyboard:
     """Inline keyboard with sample buttons."""
     keyboard = InlineKeyboard()
     keyboard.add(*sample_inline_buttons)
@@ -46,7 +50,9 @@ def populated_inline_keyboard(sample_inline_buttons: List[InlineButton]) -> Inli
 
 
 @pytest.fixture
-def populated_reply_keyboard(sample_reply_buttons: List[ReplyButton]) -> ReplyKeyboard:
+def populated_reply_keyboard(
+    sample_reply_buttons: List[ReplyButton],
+) -> ReplyKeyboard:
     """Reply keyboard with sample buttons."""
     keyboard = ReplyKeyboard()
     keyboard.add(*sample_reply_buttons)

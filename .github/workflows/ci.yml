@@ -1,141 +1,29 @@
-name: CI/CD Pipeline
-
+name: ci
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
-
+    branches:
+      - master
+      - main
+permissions:
+  contents: write
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Install dependencies
-      run: poetry install --no-interaction --no-root
-
-    - name: Run Ruff linting
-      run: poetry run ruff check .
-
-    - name: Run Ruff formatting check
-      run: poetry run ruff format --check .
-
-    - name: Run MyPy type checking
-      run: poetry run mypy pykeyboard/
-
-    - name: Run tests with coverage
-      run: poetry run pytest --cov=pykeyboard --cov-report=xml --cov-report=term-missing
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-
-  security:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Install dependencies
-      run: poetry install --no-interaction --no-root
-
-    - name: Run safety check
-      run: poetry run safety check
-
-    - name: Run bandit security linting
-      run: poetry run bandit -r pykeyboard/
-
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Install dependencies
-      run: poetry install --no-interaction --no-root
-
-    - name: Check import sorting
-      run: poetry run ruff check --select I .
-
-    - name: Check for unused imports
-      run: poetry run ruff check --select F401 .
-
-    - name: Run pre-commit hooks
-      run: poetry run pre-commit run --all-files
-
-  build:
-    runs-on: ubuntu-latest
-    needs: [test, security, quality]
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Build package
-      run: poetry build
-
-    - name: Check package
-      run: |
-        poetry run pip install dist/*.whl
-        python -c "import pykeyboard; print('Package built successfully!')"
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: pykeyboard-build
-        path: dist/
+      - uses: actions/checkout@v4
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: ~/.cache
+          restore-keys: |
+            mkdocs-material-
+      - run: pip install mkdocs-material
+      - run: mkdocs gh-deploy --force

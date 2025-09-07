@@ -7,14 +7,34 @@
 #
 # pykeyboard/inline_keyboard.py
 
-from typing import Dict, List, Union, Optional, Any
-from pydantic import Field, model_validator, PrivateAttr
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from .keyboard_base import KeyboardBase, InlineButton
-from .errors import (
-    PaginationError, LocaleError, capture_traceback_info
-)
+import contextvars
 from functools import lru_cache
+from typing import Any, Dict, List, Optional, Union
+
+from loguru import logger
+from pydantic import Field, PrivateAttr, model_validator
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from .errors import (LocaleError, PaginationError, PaginationUnchangedError,
+                     capture_traceback_info)
+from .keyboard_base import InlineButton, KeyboardBase
+
+# Context variable for client isolation in async environments
+pagination_client_context: contextvars.ContextVar[Optional[str]] = (
+    contextvars.ContextVar("pagination_client_context", default=None)
+)
+
+# Storage for pagination hashes
+_pagination_hashes: Dict[str, str] = {}
+
+
+def reset_pagination_client_context() -> None:
+    """Reset the pagination client context to None.
+
+    This utility function helps clean up context variables between operations
+    and ensures proper isolation in async environments.
+    """
+    pagination_client_context.set(None)
 
 
 class InlineKeyboard(KeyboardBase):
@@ -28,16 +48,24 @@ class InlineKeyboard(KeyboardBase):
             "next": "{} ›",
             "last": "{} »",
         },
-        description="Symbols used for pagination buttons"
+        description="Symbols used for pagination buttons",
     )
 
-    callback_pattern: str = Field(default="", description="Pattern for callback data")
-    count_pages: int = Field(default=0, ge=0, description="Total number of pages")
-    current_page: int = Field(default=0, ge=0, description="Current page number")
+    callback_pattern: str = Field(
+        default="", description="Pattern for callback data"
+    )
+    count_pages: int = Field(
+        default=0, ge=0, description="Total number of pages"
+    )
+    current_page: int = Field(
+        default=0, ge=0, description="Current page number"
+    )
 
     pyrogram_markup: Optional[InlineKeyboardMarkup] = PrivateAttr(default=None)
 
-    custom_locales: Dict[str, str] = Field(default_factory=dict, description="User-defined custom locales")
+    custom_locales: Dict[str, str] = Field(
+        default_factory=dict, description="User-defined custom locales"
+    )
 
     @staticmethod
     @lru_cache(maxsize=1)
@@ -54,85 +82,85 @@ class InlineKeyboard(KeyboardBase):
             # European Languages
             "be_BY": "🇧🇾 Беларуская",  # Belarusian - Belarus
             "bg_BG": "🇧🇬 Български",  # Bulgarian - Bulgaria
-            "cs_CZ": "🇨🇿 Čeština",    # Czech - Czech Republic
-            "da_DK": "🇩🇰 Dansk",      # Danish - Denmark
-            "de_DE": "🇩🇪 Deutsch",    # German - Germany
-            "el_GR": "🇬🇷 Ελληνικά",   # Greek - Greece
-            "en_US": "🇺🇸 English",    # English - United States
-            "en_GB": "🇬🇧 English",    # English - United Kingdom
-            "es_ES": "🇪🇸 Español",    # Spanish - Spain
-            "et_EE": "🇪🇪 Eesti",      # Estonian - Estonia
-            "fi_FI": "🇫🇮 Suomi",      # Finnish - Finland
-            "fr_FR": "🇫🇷 Français",   # French - France
-            "hr_HR": "🇭🇷 Hrvatski",   # Croatian - Croatia
-            "hu_HU": "🇭🇺 Magyar",     # Hungarian - Hungary
-            "is_IS": "🇮🇸 Íslenska",   # Icelandic - Iceland
-            "it_IT": "🇮🇹 Italiano",   # Italian - Italy
-            "lt_LT": "🇱🇹 Lietuvių",   # Lithuanian - Lithuania
-            "lv_LV": "🇱🇻 Latviešu",   # Latvian - Latvia
-            "mk_MK": "🇲🇰 Македонски", # Macedonian - North Macedonia
-            "nl_NL": "🇳🇱 Nederlands", # Dutch - Netherlands
-            "no_NO": "🇳🇴 Norsk",      # Norwegian - Norway
-            "pl_PL": "🇵🇱 Polski",     # Polish - Poland
+            "cs_CZ": "🇨🇿 Čeština",  # Czech - Czech Republic
+            "da_DK": "🇩🇰 Dansk",  # Danish - Denmark
+            "de_DE": "🇩🇪 Deutsch",  # German - Germany
+            "el_GR": "🇬🇷 Ελληνικά",  # Greek - Greece
+            "en_US": "🇺🇸 English",  # English - United States
+            "en_GB": "🇬🇧 English",  # English - United Kingdom
+            "es_ES": "🇪🇸 Español",  # Spanish - Spain
+            "et_EE": "🇪🇪 Eesti",  # Estonian - Estonia
+            "fi_FI": "🇫🇮 Suomi",  # Finnish - Finland
+            "fr_FR": "🇫🇷 Français",  # French - France
+            "hr_HR": "🇭🇷 Hrvatski",  # Croatian - Croatia
+            "hu_HU": "🇭🇺 Magyar",  # Hungarian - Hungary
+            "is_IS": "🇮🇸 Íslenska",  # Icelandic - Iceland
+            "it_IT": "🇮🇹 Italiano",  # Italian - Italy
+            "lt_LT": "🇱🇹 Lietuvių",  # Lithuanian - Lithuania
+            "lv_LV": "🇱🇻 Latviešu",  # Latvian - Latvia
+            "mk_MK": "🇲🇰 Македонски",  # Macedonian - North Macedonia
+            "nl_NL": "🇳🇱 Nederlands",  # Dutch - Netherlands
+            "no_NO": "🇳🇴 Norsk",  # Norwegian - Norway
+            "pl_PL": "🇵🇱 Polski",  # Polish - Poland
             "pt_PT": "🇵🇹 Português",  # Portuguese - Portugal
             "pt_BR": "🇧🇷 Português",  # Portuguese - Brazil
-            "ro_RO": "🇷🇴 Română",     # Romanian - Romania
-            "ru_RU": "🇷🇺 Русский",    # Russian - Russia
-            "sk_SK": "🇸🇰 Slovenčina", # Slovak - Slovakia
-            "sl_SI": "🇸🇮 Slovenščina", # Slovenian - Slovenia
-            "sv_SE": "🇸🇪 Svenska",    # Swedish - Sweden
-            "tr_TR": "🇹🇷 Türkçe",     # Turkish - Turkey
-            "uk_UA": "🇺🇦 Українська", # Ukrainian - Ukraine
-
+            "ro_RO": "🇷🇴 Română",  # Romanian - Romania
+            "ru_RU": "🇷🇺 Русский",  # Russian - Russia
+            "sk_SK": "🇸🇰 Slovenčina",  # Slovak - Slovakia
+            "sl_SI": "🇸🇮 Slovenščina",  # Slovenian - Slovenia
+            "sv_SE": "🇸🇪 Svenska",  # Swedish - Sweden
+            "tr_TR": "🇹🇷 Türkçe",  # Turkish - Turkey
+            "uk_UA": "🇺🇦 Українська",  # Ukrainian - Ukraine
             # Asian Languages
-            "ar_SA": "🇸🇦 العربية",    # Arabic - Saudi Arabia
-            "bn_BD": "🇧🇩 বাংলা",      # Bengali - Bangladesh
-            "zh_CN": "🇨🇳 中文",       # Chinese - China
-            "zh_TW": "🇹🇼 中文",       # Chinese - Taiwan
-            "zh_HK": "🇭🇰 中文",       # Chinese - Hong Kong
-            "hi_IN": "🇮🇳 हिन्दी",      # Hindi - India
+            "ar_SA": "🇸🇦 العربية",  # Arabic - Saudi Arabia
+            "bn_BD": "🇧🇩 বাংলা",  # Bengali - Bangladesh
+            "zh_CN": "🇨🇳 中文",  # Chinese - China
+            "zh_TW": "🇹🇼 中文",  # Chinese - Taiwan
+            "zh_HK": "🇭🇰 中文",  # Chinese - Hong Kong
+            "hi_IN": "🇮🇳 हिन्दी",  # Hindi - India
             "id_ID": "🇮🇩 Bahasa Indonesia",  # Indonesian - Indonesia
-            "ja_JP": "🇯🇵 日本語",      # Japanese - Japan
-            "ko_KR": "🇰🇷 한국어",      # Korean - Korea
+            "ja_JP": "🇯🇵 日本語",  # Japanese - Japan
+            "ko_KR": "🇰🇷 한국어",  # Korean - Korea
             "ms_MY": "🇲🇾 Bahasa Melayu",  # Malay - Malaysia
-            "th_TH": "🇹🇭 ไทย",        # Thai - Thailand
-            "vi_VN": "🇻🇳 Tiếng Việt", # Vietnamese - Vietnam
-
+            "th_TH": "🇹🇭 ไทย",  # Thai - Thailand
+            "vi_VN": "🇻🇳 Tiếng Việt",  # Vietnamese - Vietnam
             # Other Languages
             "af_ZA": "🇿🇦 Afrikaans",  # Afrikaans - South Africa
-            "am_ET": "🇪🇹 አማርኛ",      # Amharic - Ethiopia
-            "az_AZ": "🇦🇿 Azərbaycan", # Azerbaijani - Azerbaijan
-            "eu_ES": "🇪🇸 Euskera",    # Basque - Spain
-            "ca_ES": "🇪🇸 Català",     # Catalan - Spain
+            "am_ET": "🇪🇹 አማርኛ",  # Amharic - Ethiopia
+            "az_AZ": "🇦🇿 Azərbaycan",  # Azerbaijani - Azerbaijan
+            "eu_ES": "🇪🇸 Euskera",  # Basque - Spain
+            "ca_ES": "🇪🇸 Català",  # Catalan - Spain
             "fil_PH": "🇵🇭 Filipino",  # Filipino - Philippines
-            "gl_ES": "🇪🇸 Galego",     # Galician - Spain
-            "ka_GE": "🇬🇪 ქართული",    # Georgian - Georgia
-            "gu_IN": "🇮🇳 ગુજરાતી",    # Gujarati - India
-            "he_IL": "🇮🇱 עברית",      # Hebrew - Israel
-            "kn_IN": "🇮🇳 ಕನ್ನಡ",      # Kannada - India
-            "kk_KZ": "🇰🇿 Қазақ",      # Kazakh - Kazakhstan
-            "km_KH": "🇰🇭 ខ្មែរ",      # Khmer - Cambodia
-            "ky_KG": "🇰🇬 Кыргыз",     # Kyrgyz - Kyrgyzstan
-            "lo_LA": "🇱🇦 ລາວ",        # Lao - Laos
-            "ml_IN": "🇮🇳 മലയാളം",    # Malayalam - India
-            "mr_IN": "🇮🇳 मराठी",      # Marathi - India
-            "mn_MN": "🇲🇳 Монгол",     # Mongolian - Mongolia
-            "ne_NP": "🇳🇵 नेपाली",      # Nepali - Nepal
-            "or_IN": "🇮🇳 ଓଡ଼ିଆ",      # Odia - India
-            "fa_IR": "🇮🇷 فارسی",      # Persian - Iran
-            "pa_IN": "🇮🇳 ਪੰਜਾਬੀ",     # Punjabi - India
-            "si_LK": "🇱🇰 සිංහල",      # Sinhala - Sri Lanka
-            "ta_IN": "🇮🇳 தமிழ்",      # Tamil - India
-            "te_IN": "🇮🇳 తెలుగు",     # Telugu - India
-            "tg_TJ": "🇹🇯 Тоҷикӣ",    # Tajik - Tajikistan
-            "ur_PK": "🇵🇰 اردو",       # Urdu - Pakistan
+            "gl_ES": "🇪🇸 Galego",  # Galician - Spain
+            "ka_GE": "🇬🇪 ქართული",  # Georgian - Georgia
+            "gu_IN": "🇮🇳 ગુજરાતી",  # Gujarati - India
+            "he_IL": "🇮🇱 עברית",  # Hebrew - Israel
+            "kn_IN": "🇮🇳 ಕನ್ನಡ",  # Kannada - India
+            "kk_KZ": "🇰🇿 Қазақ",  # Kazakh - Kazakhstan
+            "km_KH": "🇰🇭 ខ្មែរ",  # Khmer - Cambodia
+            "ky_KG": "🇰🇬 Кыргыз",  # Kyrgyz - Kyrgyzstan
+            "lo_LA": "🇱🇦 ລາວ",  # Lao - Laos
+            "ml_IN": "🇮🇳 മലയാളം",  # Malayalam - India
+            "mr_IN": "🇮🇳 मराठी",  # Marathi - India
+            "mn_MN": "🇲🇳 Монгол",  # Mongolian - Mongolia
+            "ne_NP": "🇳🇵 नेपाली",  # Nepali - Nepal
+            "or_IN": "🇮🇳 ଓଡ଼ିଆ",  # Odia - India
+            "fa_IR": "🇮🇷 فارسی",  # Persian - Iran
+            "pa_IN": "🇮🇳 ਪੰਜਾਬੀ",  # Punjabi - India
+            "si_LK": "🇱🇰 සිංහල",  # Sinhala - Sri Lanka
+            "ta_IN": "🇮🇳 தமிழ்",  # Tamil - India
+            "te_IN": "🇮🇳 తెలుగు",  # Telugu - India
+            "tg_TJ": "🇹🇯 Тоҷикӣ",  # Tajik - Tajikistan
+            "ur_PK": "🇵🇰 اردو",  # Urdu - Pakistan
             "uz_UZ": "🇺🇿 Oʻzbekcha",  # Uzbek - Uzbekistan
         }
 
-    @model_validator(mode='after')
-    def initialize_pyrogram_markup(self) -> 'InlineKeyboard':
+    @model_validator(mode="after")
+    def initialize_pyrogram_markup(self) -> "InlineKeyboard":
         """Initialize the Pyrogram InlineKeyboardMarkup after model creation."""
-        self.pyrogram_markup = InlineKeyboardMarkup(inline_keyboard=self.keyboard)
+        self.pyrogram_markup = InlineKeyboardMarkup(
+            inline_keyboard=self.keyboard
+        )
         return self
 
     def _update_keyboard(self) -> None:
@@ -171,47 +199,103 @@ class InlineKeyboard(KeyboardBase):
         return InlineButton(text=text, callback_data=callback_data)
 
     def paginate(
-        self, count_pages: int, current_page: int, callback_pattern: str
+        self,
+        count_pages: int,
+        current_page: int,
+        callback_pattern: str,
+        source: Optional[str] = None,
     ) -> None:
-        """Create pagination keyboard with comprehensive edge case handling.
+        """Create pagination keyboard with comprehensive edge case handling and automatic duplicate prevention.
+
+        This method includes automatic detection and prevention of identical pagination keyboards
+        using context variables for async isolation. When the same pagination parameters are used
+        again, a PaginationUnchangedError is raised to prevent MessageNotModifiedError from Telegram.
 
         Args:
             count_pages (int): Total number of pages. Must be >= 1.
             current_page (int): The page number currently being viewed. Must be >= 1.
             callback_pattern (str): The pattern used for callback data. Must contain '{number}' placeholder.
+            source (Optional[str]): Source identifier for isolation in multi-client scenarios.
+                If None, uses contextvar or defaults to 'default'. Allows different clients
+                to have separate duplicate prevention tracking.
 
         Raises:
             PaginationError: If pagination parameters are invalid with detailed suggestions.
+            PaginationUnchangedError: If identical keyboard was already created for this source.
+
+        Note:
+            For multi-client async applications, set the context variable:
+            pagination_client_context.set('client_id')
         """
         if count_pages < 1:
             raise PaginationError(
-                "count_pages", count_pages, "count_pages must be >= 1",
-                traceback_info=capture_traceback_info(skip_frames=1)
+                "count_pages",
+                count_pages,
+                "count_pages must be >= 1",
+                traceback_info=capture_traceback_info(skip_frames=1),
             )
 
         if current_page < 1:
             raise PaginationError(
-                "current_page", current_page, "current_page must be >= 1",
-                traceback_info=capture_traceback_info(skip_frames=1)
+                "current_page",
+                current_page,
+                "current_page must be >= 1",
+                traceback_info=capture_traceback_info(skip_frames=1),
             )
 
-        if not callback_pattern or '{number}' not in callback_pattern:
+        if not callback_pattern or "{number}" not in callback_pattern:
             raise PaginationError(
-                "callback_pattern", callback_pattern, "callback_pattern must contain '{number}' placeholder",
-                traceback_info=capture_traceback_info(skip_frames=1)
+                "callback_pattern",
+                callback_pattern,
+                "callback_pattern must contain '{number}' placeholder",
+                traceback_info=capture_traceback_info(skip_frames=1),
             )
 
         if current_page > count_pages:
             raise PaginationError(
-                "current_page", current_page, f"current_page ({current_page}) cannot exceed count_pages ({count_pages})",
-                traceback_info=capture_traceback_info(skip_frames=1)
+                "current_page",
+                current_page,
+                f"current_page ({current_page}) cannot exceed count_pages ({count_pages})",
+                traceback_info=capture_traceback_info(skip_frames=1),
             )
 
         if count_pages > 10000:
             raise PaginationError(
-                "count_pages", count_pages, "count_pages is too large. Maximum supported is 10000",
-                traceback_info=capture_traceback_info(skip_frames=1)
+                "count_pages",
+                count_pages,
+                "count_pages is too large. Maximum supported is 10000",
+                traceback_info=capture_traceback_info(skip_frames=1),
             )
+
+        # Determine source for duplicate prevention
+        if source is None:
+            source = pagination_client_context.get()
+            if source is None:
+                source = "default"
+
+        # Keyboard state for hashing
+        keyboard_state_str = (
+            f"{count_pages}:{current_page}:{callback_pattern}:{source}"
+        )
+
+        # Generate hash for duplicate detection
+        current_hash = PaginationUnchangedError.get_keyboard_hash(
+            keyboard_state_str
+        )
+
+        # Check for duplicates
+        if source in _pagination_hashes:
+            previous_hash = _pagination_hashes[source]
+            if current_hash == previous_hash:
+                raise PaginationUnchangedError(
+                    source=source,
+                    keyboard_hash=current_hash,
+                    previous_hash=previous_hash,
+                    traceback_info=capture_traceback_info(skip_frames=1),
+                )
+
+        # Store hash for future duplicate detection
+        _pagination_hashes[source] = current_hash
 
         self.count_pages = count_pages
         self.current_page = current_page
@@ -288,7 +372,8 @@ class InlineKeyboard(KeyboardBase):
                 text = str(i)
             buttons.append(
                 self._create_button(
-                    text=text, callback_data=self.callback_pattern.format(number=i)
+                    text=text,
+                    callback_data=self.callback_pattern.format(number=i),
                 )
             )
         return buttons
@@ -315,24 +400,34 @@ class InlineKeyboard(KeyboardBase):
                 callback_data=self.callback_pattern.format(number=1),
             ),
             self._create_button(
-                text=self.PAGINATION_SYMBOLS["prev"].format(self.current_page - 1),
+                text=self.PAGINATION_SYMBOLS["prev"].format(
+                    self.current_page - 1
+                ),
                 callback_data=self.callback_pattern.format(
                     number=self.current_page - 1
                 ),
             ),
             self._create_button(
-                text=self.PAGINATION_SYMBOLS["current"].format(self.current_page),
-                callback_data=self.callback_pattern.format(number=self.current_page),
+                text=self.PAGINATION_SYMBOLS["current"].format(
+                    self.current_page
+                ),
+                callback_data=self.callback_pattern.format(
+                    number=self.current_page
+                ),
             ),
             self._create_button(
-                text=self.PAGINATION_SYMBOLS["next"].format(self.current_page + 1),
+                text=self.PAGINATION_SYMBOLS["next"].format(
+                    self.current_page + 1
+                ),
                 callback_data=self.callback_pattern.format(
                     number=self.current_page + 1
                 ),
             ),
             self._create_button(
                 text=self.PAGINATION_SYMBOLS["last"].format(self.count_pages),
-                callback_data=self.callback_pattern.format(number=self.count_pages),
+                callback_data=self.callback_pattern.format(
+                    number=self.count_pages
+                ),
             ),
         ]
 
@@ -358,8 +453,12 @@ class InlineKeyboard(KeyboardBase):
                 callback_data=self.callback_pattern.format(number=1),
             ),
             self._create_button(
-                text=self.PAGINATION_SYMBOLS["prev"].format(self.count_pages - 3),
-                callback_data=self.callback_pattern.format(number=self.count_pages - 3),
+                text=self.PAGINATION_SYMBOLS["prev"].format(
+                    self.count_pages - 3
+                ),
+                callback_data=self.callback_pattern.format(
+                    number=self.count_pages - 3
+                ),
             ),
         ]
 
@@ -371,13 +470,17 @@ class InlineKeyboard(KeyboardBase):
             )
             buttons.append(
                 self._create_button(
-                    text=text, callback_data=self.callback_pattern.format(number=i)
+                    text=text,
+                    callback_data=self.callback_pattern.format(number=i),
                 )
             )
         return buttons
 
     def languages(
-        self, callback_pattern: str, locales: Union[str, List[str]], row_width: int = 2
+        self,
+        callback_pattern: str,
+        locales: Union[str, List[str]],
+        row_width: int = 2,
     ) -> None:
         """Create language selection keyboard with comprehensive validation.
 
@@ -392,14 +495,21 @@ class InlineKeyboard(KeyboardBase):
         Time complexity: O(m) where m is the number of valid locales.
         Space complexity: O(m) for storing the button list.
         """
-        if not callback_pattern or '{locale}' not in callback_pattern:
-            raise LocaleError("callback_pattern", reason="callback_pattern must contain '{locale}' placeholder")
+        if not callback_pattern or "{locale}" not in callback_pattern:
+            raise LocaleError(
+                "callback_pattern",
+                reason="callback_pattern must contain '{locale}' placeholder",
+            )
 
         if row_width < 1:
             raise LocaleError("row_width", reason="row_width must be >= 1")
 
         if isinstance(locales, str):
             locales = [locales]
+        elif not isinstance(locales, list):
+            raise LocaleError(
+                "locales", reason="locales must be a string or list of strings"
+            )
 
         if not locales:
             raise LocaleError("locales", reason="locales list cannot be empty")
@@ -410,7 +520,10 @@ class InlineKeyboard(KeyboardBase):
         if not valid_locales:
             available_locales = list(all_locales.keys())[:5]
 
-            raise LocaleError("locales", reason=f"No valid locales found. Available locales include: {available_locales}")
+            raise LocaleError(
+                "locales",
+                reason=f"No valid locales found. Available locales include: {available_locales}",
+            )
 
         buttons = [
             self._create_button(
@@ -421,7 +534,8 @@ class InlineKeyboard(KeyboardBase):
         ]
 
         self.keyboard = [
-            buttons[i : i + row_width] for i in range(0, len(buttons), row_width)
+            buttons[i : i + row_width]
+            for i in range(0, len(buttons), row_width)
         ]
         self._update_keyboard()
 
@@ -438,7 +552,9 @@ class InlineKeyboard(KeyboardBase):
                     else:
                         pyrogram_row.append(button)
                 pyrogram_keyboard.append(pyrogram_row)
-            self.pyrogram_markup = InlineKeyboardMarkup(inline_keyboard=pyrogram_keyboard)
+            self.pyrogram_markup = InlineKeyboardMarkup(
+                inline_keyboard=pyrogram_keyboard
+            )
         return self.pyrogram_markup
 
     def write(self, client: Any = None) -> Any:
@@ -450,7 +566,7 @@ class InlineKeyboard(KeyboardBase):
         return self.model_dump()
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'InlineKeyboard':
+    def from_dict(cls, data: Dict[str, Any]) -> "InlineKeyboard":
         """Create keyboard instance from dictionary representation.
 
         Deserializes a keyboard from a dictionary created by to_dict().
@@ -584,7 +700,7 @@ class InlineKeyboard(KeyboardBase):
         return self.model_dump_json()
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'InlineKeyboard':
+    def from_json(cls, json_str: str) -> "InlineKeyboard":
         """Create keyboard instance from JSON string.
 
         Deserializes a keyboard from a JSON string created by to_json().
@@ -607,3 +723,35 @@ class InlineKeyboard(KeyboardBase):
             'Test'
         """
         return cls.model_validate_json(json_str)
+
+    @classmethod
+    def clear_pagination_hashes(cls, source: Optional[str] = None) -> int:
+        """Clear stored pagination hashes for memory management.
+
+        Args:
+            source: Specific source to clear. If None, clears all hashes.
+
+        Returns:
+            Number of hashes cleared.
+        """
+        if source is None:
+            cleared = len(_pagination_hashes)
+            _pagination_hashes.clear()
+            return cleared
+        elif source in _pagination_hashes:
+            del _pagination_hashes[source]
+            return 1
+        return 0
+
+    @classmethod
+    def get_pagination_hash_stats(cls) -> Dict[str, Any]:
+        """Get statistics about stored pagination hashes.
+
+        Returns:
+            Dictionary with hash storage statistics.
+        """
+        return {
+            "total_sources": len(_pagination_hashes),
+            "sources": list(_pagination_hashes.keys()),
+            "total_hashes": len(_pagination_hashes),
+        }

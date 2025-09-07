@@ -7,9 +7,11 @@
 #
 # pykeyboard/keyboard_base.py
 
-from typing import List, Union, Optional, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Optional, Union
+
 from pydantic import BaseModel, Field, field_validator
-from pyrogram.types import InlineKeyboardButton, WebAppInfo, CallbackGame, LoginUrl, KeyboardButton
+from pyrogram.types import (CallbackGame, InlineKeyboardButton, KeyboardButton,
+                            LoginUrl, WebAppInfo)
 
 from pykeyboard.errors import ValidationError
 
@@ -37,13 +39,17 @@ class KeyboardBase(BaseModel):
 
     model_config = {"arbitrary_types_allowed": True}
 
-    row_width: int = Field(default=3, ge=1, description="Number of buttons per row")
-    keyboard: List[List[Union[InlineKeyboardButton, KeyboardButton, Any]]] = Field(
-        default_factory=list,
-        description="2D list representing keyboard layout"
+    row_width: int = Field(
+        default=3, ge=1, description="Number of buttons per row"
+    )
+    keyboard: List[List[Union[InlineKeyboardButton, KeyboardButton, Any]]] = (
+        Field(
+            default_factory=list,
+            description="2D list representing keyboard layout",
+        )
     )
 
-    def add(self, *args: Any) -> 'KeyboardBase':
+    def add(self, *args: Any) -> "KeyboardBase":
         """Add buttons to keyboard in rows based on row_width.
 
         This method automatically organizes the provided buttons into rows
@@ -68,11 +74,13 @@ class KeyboardBase(BaseModel):
         self.keyboard.clear()
         for i in range(0, len(args), self.row_width):
             row_slice = args[i : i + self.row_width]
-            self.keyboard.append(list(row_slice))  # Only convert slice to list once
+            self.keyboard.append(
+                list(row_slice)
+            )  # Only convert slice to list once
         self._update_keyboard()
         return self
 
-    def row(self, *args: Any) -> 'KeyboardBase':
+    def row(self, *args: Any) -> "KeyboardBase":
         """Add a new row of buttons to the keyboard.
 
         This method adds all provided buttons as a single row, regardless
@@ -129,7 +137,7 @@ class Button(BaseModel):
 
     text: str = Field(..., min_length=1, description="Button display text")
 
-    @field_validator('text')
+    @field_validator("text")
     @classmethod
     def validate_text(cls, v: str) -> str:
         """Validate that button text is a non-empty string.
@@ -144,7 +152,9 @@ class Button(BaseModel):
             ValueError: If text is not a string or is empty/whitespace-only.
         """
         if not v.strip():
-            raise ValidationError("text", expected_type="str", reason="text cannot be empty")
+            raise ValidationError(
+                "text", expected_type="str", reason="text cannot be empty"
+            )
         return v
 
 
@@ -220,14 +230,14 @@ class InlineButton(Button):
                 "Positional arguments for InlineButton are deprecated. "
                 "Use keyword arguments instead: InlineButton(text='...', callback_data='...')",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
             if len(args) == 1:
-                kwargs.setdefault('text', args[0])
+                kwargs.setdefault("text", args[0])
             elif len(args) == 2:
-                kwargs.setdefault('text', args[0])
-                kwargs.setdefault('callback_data', args[1])
+                kwargs.setdefault("text", args[0])
+                kwargs.setdefault("callback_data", args[1])
             else:
                 raise ValueError(
                     f"InlineButton expects 1-2 positional arguments, got {len(args)}. "
@@ -236,17 +246,39 @@ class InlineButton(Button):
 
         super().__init__(**kwargs)
 
-    callback_data: Optional[Union[str, bytes]] = Field(default=None, description="Callback data for the button")
-    url: Optional[str] = Field(default=None, description="URL to open when button is pressed")
-    web_app: Optional[WebAppInfo] = Field(default=None, description="Web app to open")
-    login_url: Optional[LoginUrl] = Field(default=None, description="Login URL for authorization")
-    user_id: Optional[int] = Field(default=None, description="User ID for the button")
-    switch_inline_query: Optional[str] = Field(default=None, description="Switch to inline query")
-    switch_inline_query_current_chat: Optional[str] = Field(default=None, description="Switch to inline query in current chat")
-    callback_game: Optional[CallbackGame] = Field(default=None, description="Callback game")
-    requires_password: Optional[bool] = Field(default=None, description="Whether password is required")
-    pay: Optional[bool] = Field(default=None, description="Whether this is a pay button")
-    copy_text: Optional[str] = Field(default=None, description="Text to copy to clipboard")
+    callback_data: Optional[Union[str, bytes]] = Field(
+        default=None, description="Callback data for the button"
+    )
+    url: Optional[str] = Field(
+        default=None, description="URL to open when button is pressed"
+    )
+    web_app: Optional[WebAppInfo] = Field(
+        default=None, description="Web app to open"
+    )
+    login_url: Optional[LoginUrl] = Field(
+        default=None, description="Login URL for authorization"
+    )
+    user_id: Optional[int] = Field(
+        default=None, description="User ID for the button"
+    )
+    switch_inline_query: Optional[str] = Field(
+        default=None, description="Switch to inline query"
+    )
+    switch_inline_query_current_chat: Optional[str] = Field(
+        default=None, description="Switch to inline query in current chat"
+    )
+    callback_game: Optional[CallbackGame] = Field(
+        default=None, description="Callback game"
+    )
+    requires_password: Optional[bool] = Field(
+        default=None, description="Whether password is required"
+    )
+    pay: Optional[bool] = Field(
+        default=None, description="Whether this is a pay button"
+    )
+    copy_text: Optional[str] = Field(
+        default=None, description="Text to copy to clipboard"
+    )
 
     def to_pyrogram(self) -> InlineKeyboardButton:
         """Convert to Pyrogram InlineKeyboardButton.

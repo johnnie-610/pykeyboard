@@ -1,430 +1,334 @@
-#!/usr/bin/env python3
 """
-PyKeyboard Usage Examples and Edge Cases
-========================================
+PyKeyboard Sequential Examples for Telegram Bot Development
 
-This file contains comprehensive examples demonstrating all features of PyKeyboard,
-including edge cases, error handling, and best practices.
-
-Run this file to see examples in action:
-    python examples.py
-
-For more information, visit: https://github.com/johnnie-610/pykeyboard
+This file contains practical examples of how to use PyKeyboard in real Telegram bot scenarios.
+Each example builds upon the previous one, showing progressive complexity.
 """
 
-import sys
-import traceback
-from typing import List, Dict, Any
-from pathlib import Path
-
-# Import PyKeyboard components
-from pykeyboard import (
-    # Core classes
-    InlineKeyboard, ReplyKeyboard, InlineButton, ReplyButton,
-
-    # Advanced features
-    KeyboardBuilder, KeyboardFactory, KeyboardVisualizer,
-
-    # Validation system
-    ButtonValidator, add_validation_rule,
-
-    # Modern utilities
-    create_keyboard_from_config, export_keyboard_to_file, import_keyboard_from_file,
-    get_keyboard_info, supports_match_case,
-
-)
+from pykeyboard import InlineButton, InlineKeyboard, ReplyButton, ReplyKeyboard
 
 
-def print_separator(title: str = "", char: str = "=", length: int = 60):
-    """Print a visual separator for examples."""
-    if title:
-        total_length = length
-        title_length = len(title) + 2  # Add spaces
-        side_length = (total_length - title_length) // 2
-        separator = char * side_length + f" {title} " + char * (total_length - title_length - side_length)
-        print(f"\n{separator}")
-    else:
-        print(f"\n{char * length}")
+# Example 1: Basic Inline Keyboard for a Simple Menu
+def create_main_menu():
+    """Create a basic main menu with common bot actions."""
+    keyboard = InlineKeyboard(row_width=2)
 
-
-def example_basic_usage():
-    """Example 1: Basic keyboard creation and usage."""
-    print_separator("Example 1: Basic Usage")
-
-    # Create a simple inline keyboard
-    keyboard = InlineKeyboard()
     keyboard.add(
-        InlineButton("👍 Like", "action:like"),
-        InlineButton("👎 Dislike", "action:dislike"),
-        InlineButton("🔄 Share", "action:share")
+        InlineButton("📊 Statistics", "menu:stats"),
+        InlineButton("⚙️ Settings", "menu:settings"),
+        InlineButton("ℹ️ Help", "menu:help"),
+        InlineButton("📞 Support", "menu:support"),
     )
 
-    print("Basic Inline Keyboard:")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
+    return keyboard
 
-    # Create a reply keyboard
-    reply_kb = ReplyKeyboard()
-    reply_kb.row(
-        ReplyButton("Option A"),
-        ReplyButton("Option B")
+
+# Example 2: Reply Keyboard for User Input
+def create_contact_keyboard():
+    """Create a reply keyboard for collecting user contact information."""
+    keyboard = ReplyKeyboard(
+        resize_keyboard=True,
+        one_time_keyboard=True,
+        placeholder="Choose an option...",
     )
-    reply_kb.row(ReplyButton("Cancel"))
 
-    print("\nBasic Reply Keyboard:")
-    print(KeyboardVisualizer.visualize_keyboard(reply_kb))
-
-
-def example_pagination():
-    """Example 2: Advanced pagination with custom navigation."""
-    print_separator("Example 2: Advanced Pagination")
-
-    # Create paginated keyboard
-    keyboard = InlineKeyboard()
-    keyboard.paginate(25, 5, "page_{number}")
-
-    print("Pagination Keyboard (Page 5 of 25):")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
-
-    # Add custom navigation buttons
     keyboard.row(
-        InlineButton("🔍 Search", "action:search"),
-        InlineButton("🏠 Home", "action:home"),
-        InlineButton("❌ Close", "action:close")
+        ReplyButton("📱 Share Phone", request_contact=True),
+        ReplyButton("📍 Share Location", request_location=True),
     )
+    keyboard.row(ReplyButton("❌ Skip"))
 
-    print("\nWith Custom Navigation:")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
+    return keyboard
 
 
-def example_languages():
-    """Example 3: Multi-language support with custom locales."""
-    print_separator("Example 3: Multi-Language Support")
-
-    # Create language selection keyboard
+# Example 3: Dynamic Pagination for Product Catalog
+def create_product_catalog_page(products, current_page, items_per_page=5):
+    """Create a paginated product catalog."""
     keyboard = InlineKeyboard()
-    keyboard.languages("lang_{locale}", ["en_US", "es_ES", "fr_FR", "de_DE"], 2)
 
-    print("Language Selection Keyboard:")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
+    # Calculate pagination
+    total_pages = (len(products) + items_per_page - 1) // items_per_page
+    start_idx = (current_page - 1) * items_per_page
+    end_idx = min(start_idx + items_per_page, len(products))
 
-    # Add custom locale
-    keyboard.add_custom_locale("en_PIRATE", "🏴‍☠️ Pirate English")
-    keyboard.add_custom_locale("es_LATINO", "🇲🇽 Español Latino")
+    # Add product buttons
+    for i in range(start_idx, end_idx):
+        product = products[i]
+        keyboard.add(
+            InlineButton(
+                f"{product['name']} - ${product['price']}",
+                f"product:{product['id']}",
+            )
+        )
 
-    # Create keyboard with custom locales
-    custom_kb = InlineKeyboard()
-    custom_kb.languages("set_lang_{locale}", ["en_PIRATE", "es_LATINO"])
+    # Add pagination controls
+    if total_pages > 1:
+        keyboard.paginate(total_pages, current_page, "catalog:{number}")
 
-    print("\nCustom Locales Keyboard:")
-    print(KeyboardVisualizer.visualize_keyboard(custom_kb))
-
-
-def example_builder_pattern():
-    """Example 4: Fluent builder pattern for complex keyboards."""
-    print_separator("Example 4: Builder Pattern")
-
-    # Using the fluent builder API
-    keyboard = (KeyboardBuilder(InlineKeyboard())
-        .add_button("📧 Email", "contact:email")
-        .add_button("📱 Phone", "contact:phone")
-        .add_row("💬 Message", "contact:message")
-        .add_conditional_button(True, "🚨 Emergency", "contact:emergency")
-        .add_conditional_button(False, "🔒 Private", "contact:private")  # Won't be added
-        .build())
-
-    print("Built with Fluent API:")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
-
-    # Using factory methods
-    confirmation_kb = KeyboardFactory.create_confirmation_keyboard(
-        yes_text="✅ Confirm",
-        no_text="❌ Cancel",
-        cancel_text="⏪ Back"
+    # Add navigation buttons
+    keyboard.row(
+        InlineButton("🏠 Main Menu", "menu:main"),
+        InlineButton("🛒 Cart", "cart:view"),
     )
 
-    print("\nFactory Method - Confirmation:")
-    print(KeyboardVisualizer.visualize_keyboard(confirmation_kb))
+    return keyboard
 
 
-def example_validation():
-    """Example 5: Custom validation and error handling."""
-    print_separator("Example 5: Validation System")
+# Example 4: Language Selection with Custom Locales
+def create_language_selector():
+    """Create a language selection keyboard with custom locales."""
+    keyboard = InlineKeyboard(row_width=2)
 
-    # Add custom validation rules
-    add_validation_rule(
-        "no_emojis",
-        lambda btn, ctx: not any(ord(c) > 127 for c in btn.text),
-        "Button text contains emojis or special characters",
-        "Remove emojis and use plain text"
+    # Add built-in languages
+    keyboard.languages("lang:{locale}", ["en_US", "es_ES", "fr_FR", "de_DE"], 2)
+
+    # Add custom locales
+    keyboard.add_custom_locale("pt_BR", "🇧🇷 Português")
+    keyboard.add_custom_locale("ru_RU", "🇷🇺 Русский")
+
+    # Add custom language buttons
+    keyboard.row(
+        InlineButton("🇧🇷 Português", "lang:pt_BR"),
+        InlineButton("🇷🇺 Русский", "lang:ru_RU"),
     )
 
-    add_validation_rule(
-        "reasonable_length",
-        lambda btn, ctx: 1 <= len(btn.text) <= 30,
-        "Button text must be 1-30 characters",
-        "Shorten the button text"
+    return keyboard
+
+
+# Example 5: Advanced Settings Menu with Conditional Buttons
+def create_settings_menu(user_premium=False, notifications_enabled=True):
+    """Create a settings menu with conditional options."""
+    keyboard = InlineKeyboard(row_width=2)
+
+    # Always available settings
+    keyboard.add(
+        InlineButton("🔔 Notifications", "settings:notifications"),
+        InlineButton("🌐 Language", "settings:language"),
+        InlineButton("🎨 Theme", "settings:theme"),
     )
 
-    # Create validator instance
-    validator = ButtonValidator()
+    # Premium-only features
+    if user_premium:
+        keyboard.add(
+            InlineButton("⭐ Premium Features", "settings:premium"),
+            InlineButton("📊 Advanced Stats", "settings:advanced_stats"),
+        )
 
-    # Test validation
-    test_buttons = [
-        InlineButton("Valid Button", "test:valid"),
-        InlineButton("🚀 Too Long Button Text Here", "test:invalid"),
-        InlineButton("", "test:empty"),  # Invalid
-    ]
+    # Notification-specific settings
+    if notifications_enabled:
+        keyboard.row(
+            InlineButton("🔕 Mute All", "settings:mute_all"),
+            InlineButton("⏰ Schedule", "settings:notification_schedule"),
+        )
 
-    print("Validation Results:")
-    for i, button in enumerate(test_buttons, 1):
-        result = validator.validate_button(button)
-        status = "✅ Valid" if result['is_valid'] else "❌ Invalid"
-        print(f"Button {i}: {status}")
-        if not result['is_valid']:
-            for error in result['errors']:
-                print(f"  • {error}")
-            for suggestion in result['suggestions']:
-                print(f"  💡 {suggestion}")
+    # Always at the bottom
+    keyboard.row(InlineButton("⬅️ Back to Menu", "menu:main"))
+
+    return keyboard
 
 
-def example_serialization():
-    """Example 6: JSON serialization and file operations."""
-    print_separator("Example 6: Serialization")
+# Example 6: Interactive Quiz with Answer Validation
+def create_quiz_question(question_data, selected_answer=None):
+    """Create a quiz question with answer options."""
+    keyboard = InlineKeyboard(row_width=2)
 
-    # Create complex keyboard
+    for i, option in enumerate(question_data["options"]):
+        # Mark selected answer
+        text = f"{'✅ ' if selected_answer == i else ''}{option}"
+        callback_data = f"quiz:answer:{question_data['id']}:{i}"
+        keyboard.add(InlineButton(text, callback_data))
+
+    # Add navigation
+    keyboard.row(
+        InlineButton("⬅️ Previous", f"quiz:prev:{question_data['id']}"),
+        InlineButton("➡️ Next", f"quiz:next:{question_data['id']}"),
+    )
+
+    return keyboard
+
+
+# Example 7: File Management Interface
+def create_file_browser(files, current_path="/", page=1):
+    """Create a file browser interface."""
+    keyboard = InlineKeyboard(row_width=3)
+
+    # Add file/folder buttons
+    for file_info in files:
+        icon = "📁" if file_info["is_dir"] else "📄"
+        text = f"{icon} {file_info['name']}"
+        callback_data = f"file:{'dir' if file_info['is_dir'] else 'file'}:{file_info['path']}"
+        keyboard.add(InlineButton(text, callback_data))
+
+    # Add navigation
+    if page > 1:
+        keyboard.row(
+            InlineButton("⬅️ Previous", f"files:{current_path}:{page-1}")
+        )
+
+    keyboard.row(
+        InlineButton("📤 Upload", "file:upload"),
+        InlineButton("🆕 New Folder", "file:new_folder"),
+        InlineButton("⬆️ Up", f"file:up:{current_path}"),
+    )
+
+    return keyboard
+
+
+# Example 8: E-commerce Cart Management
+def create_cart_management(cart_items, total_price):
+    """Create cart management interface."""
+    keyboard = InlineKeyboard(row_width=2)
+
+    # Add cart items
+    for item in cart_items:
+        text = f"{item['name']} x{item['quantity']} - ${item['price'] * item['quantity']}"
+        keyboard.add(InlineButton(text, f"cart:edit:{item['id']}"))
+
+    # Add summary and actions
+    keyboard.row(InlineButton(f"💰 Total: ${total_price}", "cart:total"))
+    keyboard.row(
+        InlineButton("✅ Checkout", "cart:checkout"),
+        InlineButton("🗑️ Clear Cart", "cart:clear"),
+    )
+    keyboard.row(InlineButton("⬅️ Continue Shopping", "shop:continue"))
+
+    return keyboard
+
+
+# Example 9: Admin Panel with Role-based Access
+def create_admin_panel(user_role="user"):
+    """Create admin panel with role-based access control."""
+    keyboard = InlineKeyboard(row_width=2)
+
+    # Basic admin functions
+    keyboard.add(
+        InlineButton("👥 User Management", "admin:users"),
+        InlineButton("📊 Analytics", "admin:analytics"),
+    )
+
+    # Advanced functions for super admins
+    if user_role == "super_admin":
+        keyboard.add(
+            InlineButton("⚙️ System Settings", "admin:system"),
+            InlineButton("🛡️ Security", "admin:security"),
+            InlineButton("💾 Backup", "admin:backup"),
+            InlineButton("🔄 Maintenance", "admin:maintenance"),
+        )
+
+    # Moderation tools for moderators and above
+    if user_role in ["moderator", "admin", "super_admin"]:
+        keyboard.row(
+            InlineButton("🚫 Ban User", "admin:ban"),
+            InlineButton("⚠️ Warn User", "admin:warn"),
+        )
+
+    keyboard.row(InlineButton("⬅️ Back to Menu", "menu:main"))
+
+    return keyboard
+
+
+# Example 10: Complete Bot Workflow Integration
+def handle_callback_query(callback_query):
+    """Example of how to handle callback queries in a bot."""
+    data = callback_query.data
+
+    if data.startswith("menu:"):
+        action = data.split(":")[1]
+        if action == "stats":
+            return create_stats_keyboard()
+        elif action == "settings":
+            return create_settings_menu()
+        # ... handle other menu actions
+
+    elif data.startswith("product:"):
+        product_id = data.split(":")[1]
+        return create_product_detail_keyboard(product_id)
+
+    elif data.startswith("cart:"):
+        action = data.split(":")[1]
+        if action == "add":
+            # Add to cart logic
+            return create_cart_confirmation_keyboard()
+        # ... handle other cart actions
+
+    # Default fallback
+    return create_main_menu()
+
+
+# Helper functions for the complete workflow
+def create_stats_keyboard():
+    """Create statistics display keyboard."""
     keyboard = InlineKeyboard()
     keyboard.add(
-        InlineButton("Save", "action:save"),
-        InlineButton("Load", "action:load"),
-        InlineButton("Delete", "action:delete")
+        InlineButton("📈 Daily Stats", "stats:daily"),
+        InlineButton("📊 Weekly Stats", "stats:weekly"),
+        InlineButton("📅 Monthly Stats", "stats:monthly"),
     )
-    keyboard.paginate(10, 1, "nav_{number}")
-
-    # Serialize to JSON
-    json_str = keyboard.to_json()
-    print(f"JSON Length: {len(json_str)} characters")
-    print(f"JSON Preview: {json_str[:100]}...")
-
-    # Deserialize from JSON
-    restored_keyboard = InlineKeyboard.from_json(json_str)
-    print(f"\nRestored Keyboard - {len(restored_keyboard.keyboard)} rows")
-
-    # Export to file
-    export_keyboard_to_file(keyboard, "example_keyboard.json")
-    export_keyboard_to_file(keyboard, "example_keyboard.yaml")
-
-    # Import from file
-    imported_kb = import_keyboard_from_file("example_keyboard.json")
-    print(f"Imported Keyboard - {len(imported_kb.keyboard)} rows")
-
-    # Clean up
-    Path("example_keyboard.json").unlink(missing_ok=True)
-    Path("example_keyboard.yaml").unlink(missing_ok=True)
+    keyboard.row(InlineButton("⬅️ Back", "menu:main"))
+    return keyboard
 
 
-def example_visualization():
-    """Example 7: Advanced debugging and visualization."""
-    print_separator("Example 7: Visualization & Debugging")
+def create_product_detail_keyboard(product_id):
+    """Create product detail view keyboard."""
+    keyboard = InlineKeyboard(row_width=2)
+    keyboard.add(
+        InlineButton("🛒 Add to Cart", f"cart:add:{product_id}"),
+        InlineButton("❤️ Add to Wishlist", f"wishlist:add:{product_id}"),
+        InlineButton("⭐ Rate Product", f"rating:show:{product_id}"),
+        InlineButton("📝 Reviews", f"reviews:show:{product_id}"),
+    )
+    keyboard.row(InlineButton("⬅️ Back to Catalog", "catalog:1"))
+    return keyboard
 
-    # Create complex keyboard for analysis
+
+def create_cart_confirmation_keyboard():
+    """Create cart addition confirmation keyboard."""
     keyboard = InlineKeyboard()
     keyboard.add(
-        InlineButton("A", "a"), InlineButton("B", "b"), InlineButton("C", "c"),
-        InlineButton("D", "d"), InlineButton("E", "e"), InlineButton("F", "f")
+        InlineButton("✅ Continue Shopping", "shop:continue"),
+        InlineButton("🛒 View Cart", "cart:view"),
     )
-    keyboard.row(InlineButton("Single", "single"))
-
-    # ASCII visualization
-    print("ASCII Visualization:")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
-
-    # Detailed analysis
-    analysis = KeyboardVisualizer.analyze_keyboard(keyboard)
-    print("Analysis Results:")
-    print(f"  • Total Buttons: {analysis['total_buttons']}")
-    print(f"  • Total Rows: {analysis['total_rows']}")
-    print(f"  • Max Row Length: {analysis['max_row_length']}")
-    print(f"  • Structure Valid: {analysis['structure_valid']}")
-
-    # Debug report
-    print("Debug Report:")
-    debug_lines = KeyboardVisualizer.generate_debug_report(keyboard).split('\n')[:15]
-    for line in debug_lines:
-        print(f"  {line}")
+    return keyboard
 
 
-def example_modern_python():
-    """Example 8: Modern Python features and utilities."""
-    print_separator("Example 8: Modern Python Features")
-
-    # Check Python version support
-    print("Python Version Support:")
-    print(f"  • Python Version: {sys.version}")
-    print(f"  • Match/Case Support: {supports_match_case()}")
-    print(f"  • Literal Types Support: {supports_literal_types()}")
-
-    # Configuration-based keyboard creation
-    config = {
-        "type": "inline",
-        "row_width": 2,
-        "buttons": [
-            {"text": "Start", "callback_data": "cmd:start"},
-            {"text": "Help", "callback_data": "cmd:help"},
-            {"text": "Settings", "callback_data": "cmd:settings"},
-            {"text": "About", "callback_data": "cmd:about"}
-        ]
-    }
-
-    keyboard = create_keyboard_from_config(config)
-    print("Configuration-based Keyboard:")
-    print(KeyboardVisualizer.visualize_keyboard(keyboard))
-
-    # Keyboard information
-    info = get_keyboard_info(keyboard)
-    print("Keyboard Information:")
-    print(f"  • Type: {info['type']}")
-    print(f"  • Total Buttons: {info['total_buttons']}")
-    print(f"  • Python Features: {info['features']}")
-
-
-def example_edge_cases():
-    """Example 9: Edge cases and error handling."""
-    print_separator("Example 9: Edge Cases & Error Handling")
-
-    print("Testing Edge Cases:")
-
-    # Test 1: Empty keyboard
-    try:
-        empty_kb = InlineKeyboard()
-        print("  ✅ Empty keyboard created successfully")
-    except Exception as e:
-        print(f"  ❌ Empty keyboard failed: {e}")
-
-    # Test 2: Invalid pagination
-    try:
-        kb = InlineKeyboard()
-        kb.paginate(0, 1, "page_{number}")  # Invalid: 0 pages
-        print("  ❌ Should have failed with 0 pages")
-    except ValueError as e:
-        print(f"  ✅ Correctly caught invalid pagination: {e}")
-
-    # Test 3: Invalid current page
-    try:
-        kb = InlineKeyboard()
-        kb.paginate(5, 10, "page_{number}")  # Invalid: current > total
-        print("  ❌ Should have failed with invalid current page")
-    except ValueError as e:
-        print(f"  ✅ Correctly caught invalid current page: {e}")
-
-    # Test 4: Large keyboard
-    try:
-        kb = InlineKeyboard()
-        # Create keyboard with many buttons
-        buttons = [InlineButton(f"Btn{i}", f"action:{i}") for i in range(50)]
-        kb.add(*buttons)
-        print(f"  ✅ Large keyboard created: {len(kb.keyboard)} rows")
-    except Exception as e:
-        print(f"  ❌ Large keyboard failed: {e}")
-
-    # Test 5: Invalid locale
-    try:
-        kb = InlineKeyboard()
-        kb.languages("lang_{locale}", ["invalid_locale"])
-        print("  ❌ Should have handled invalid locale gracefully")
-    except Exception as e:
-        print(f"  ✅ Correctly handled invalid locale: {e}")
-
-
-
-
-def example_performance():
-    """Example 11: Performance considerations and optimization."""
-    print_separator("Example 11: Performance & Optimization")
-
-    import time
-
-    # Test keyboard creation performance
-    print("Performance Testing:")
-
-    # Small keyboard
-    start_time = time.time()
-    small_kb = InlineKeyboard()
-    for i in range(10):
-        small_kb.add(InlineButton(f"Button {i}", f"action:{i}"))
-    small_time = time.time() - start_time
-    print(".4f")
-
-    # Large keyboard
-    start_time = time.time()
-    large_kb = InlineKeyboard()
-    for i in range(100):
-        large_kb.add(InlineButton(f"Button {i}", f"action:{i}"))
-    large_time = time.time() - start_time
-    print(".4f")
-
-    # Pagination performance
-    start_time = time.time()
-    paginated_kb = InlineKeyboard()
-    paginated_kb.paginate(1000, 500, "page_{number}")
-    pagination_time = time.time() - start_time
-    print(".4f")
-
-    # Serialization performance
-    start_time = time.time()
-    json_data = large_kb.to_json()
-    serialize_time = time.time() - start_time
-    print(".4f")
-
-    # Deserialization performance
-    start_time = time.time()
-    restored_kb = InlineKeyboard.from_json(json_data)
-    deserialize_time = time.time() - start_time
-    print(".4f")
-
-    print("Optimization Tips:")
-    print("  • Use LRU cache for repeated button creation")
-    print("  • Minimize list copying in large keyboards")
-    print("  • Use pagination for large datasets")
-    print("  • Cache serialized keyboards when possible")
-
-
-def main():
-    """Run all examples."""
-    print("🚀 PyKeyboard Comprehensive Examples")
-    print("=" * 60)
-    print("This script demonstrates all major features of PyKeyboard.")
-    print("Each example shows different aspects of the library.\n")
-
-    examples = [
-        example_basic_usage,
-        example_pagination,
-        example_languages,
-        example_builder_pattern,
-        example_validation,
-        example_serialization,
-        example_visualization,
-        example_modern_python,
-        example_edge_cases,
-        example_performance,
-    ]
-
-    for i, example_func in enumerate(examples, 1):
-        try:
-            example_func()
-            print(f"\n✅ Example {i}/{len(examples)} completed successfully")
-        except Exception as e:
-            print(f"\n❌ Example {i}/{len(examples)} failed: {e}")
-            print("Traceback:")
-            traceback.print_exc()
-
-    print_separator("All Examples Complete", "=")
-    print("🎉 Thank you for exploring PyKeyboard!")
-    print("\n📚 For more information:")
-    print("   • Documentation: https://pykeyboard.readthedocs.io/")
-    print("   • GitHub: https://github.com/johnnie-610/pykeyboard")
-    print("   • Issues: https://github.com/johnnie-610/pykeyboard/issues")
-    print("   • Community: https://github.com/johnnie-610/pykeyboard/discussions")
-
-
+# Usage examples
 if __name__ == "__main__":
-    main()
+    # Example usage of the keyboards
+    print("=== PyKeyboard Sequential Examples ===\n")
+
+    # 1. Main Menu
+    print("1. Main Menu:")
+    main_menu = create_main_menu()
+    print(f"   Keyboard has {len(main_menu.keyboard)} rows")
+    print(f"   Total buttons: {sum(len(row) for row in main_menu.keyboard)}\n")
+
+    # 2. Contact Keyboard
+    print("2. Contact Keyboard:")
+    contact_kb = create_contact_keyboard()
+    print(f"   Reply keyboard with placeholder: {contact_kb.placeholder}\n")
+
+    # 3. Product Catalog
+    print("3. Product Catalog:")
+    sample_products = [
+        {"id": 1, "name": "Laptop", "price": 999},
+        {"id": 2, "name": "Mouse", "price": 25},
+        {"id": 3, "name": "Keyboard", "price": 75},
+    ]
+    catalog = create_product_catalog_page(sample_products, 1)
+    print(f"   Catalog page with {len(catalog.keyboard)} rows\n")
+
+    # 4. Language Selector
+    print("4. Language Selector:")
+    lang_kb = create_language_selector()
+    print(f"   Language selection with {len(lang_kb.keyboard)} rows\n")
+
+    # 5. Settings Menu
+    print("5. Settings Menu (Premium User):")
+    settings = create_settings_menu(user_premium=True)
+    print(f"   Premium settings with {len(settings.keyboard)} rows\n")
+
+    print("All examples created successfully!")
+    print("These keyboards can be used with:")
+    print(
+        "await message.reply_text('Choose an option:', reply_markup=keyboard.pyrogram_markup)"
+    )

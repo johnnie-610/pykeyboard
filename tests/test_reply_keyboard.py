@@ -1,7 +1,8 @@
 """Tests for reply keyboard functionality."""
 
 import pytest
-from pykeyboard import ReplyKeyboard, ReplyButton
+
+from pykeyboard import ReplyButton, ReplyKeyboard
 
 
 class TestReplyKeyboard:
@@ -25,7 +26,7 @@ class TestReplyKeyboard:
             resize_keyboard=True,
             one_time_keyboard=True,
             selective=True,
-            placeholder="Choose an option"
+            placeholder="Choose an option",
         )
         assert keyboard.is_persistent is True
         assert keyboard.resize_keyboard is True
@@ -60,9 +61,7 @@ class TestReplyButton:
     def test_reply_button_with_options(self):
         """Test reply button with various options."""
         button = ReplyButton(
-            text="Contact",
-            request_contact=True,
-            request_location=False
+            text="Contact", request_contact=True, request_location=False
         )
         assert button.text == "Contact"
         assert button.request_contact is True
@@ -83,9 +82,11 @@ class TestReplyButton:
         assert button.text == "Valid text"
 
         # Empty text should raise error
-        with pytest.raises(ValueError, match="Button text cannot be empty"):
+        with pytest.raises(
+            ValueError, match="String should have at least 1 character"
+        ):
             ReplyButton(text="")
 
         # Non-string text should raise error
-        with pytest.raises(ValueError, match="Button text must be a string"):
+        with pytest.raises(ValueError, match="Input should be a valid string"):
             ReplyButton(text=123)  # type: ignore

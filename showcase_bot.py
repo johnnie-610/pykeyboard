@@ -31,39 +31,42 @@ Notes:
 - All interactions are guarded with error handling and graceful fallbacks.
 """
 
-import os
-import pprint
-import sys
-import json
 import asyncio
-import tempfile
-import time
 import logging
-from typing import Dict, Any, List, Optional
+import os
+import sys
+import time
+from typing import Any, Dict, List, Optional
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from pykeyboard import (
-    InlineKeyboard, InlineButton,
-    ReplyKeyboard, ReplyButton, ReplyKeyboardRemove, ForceReply,
-    KeyboardFactory,
-    ButtonValidator,
-    create_keyboard_from_config, get_keyboard_info,
-    PyKeyboardError, ValidationError, PaginationError, LocaleError, ConfigurationError,
-
-)
-
 from pyrogram import Client, filters
-from pyrogram.types import LinkPreviewOptions, Message, CallbackQuery
+from pyrogram.methods.utilities.idle import idle
+from pyrogram.types import CallbackQuery, LinkPreviewOptions, Message
+
+from pykeyboard import (ConfigurationError, ForceReply, InlineButton,
+                        InlineKeyboard, KeyboardFactory, LocaleError,
+                        PaginationError, PaginationUnchangedError,
+                        PyKeyboardError, ReplyButton, ReplyKeyboard,
+                        ReplyKeyboardRemove, ValidationError,
+                        pagination_client_context)
+
 LIBRARY_NAME = "Kurigram"
 
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") # Bot token: Get it from @BotFather
-API_ID = os.getenv("TELEGRAM_API_ID") # API ID: Get it from https://my.telegram.org
-API_HASH = os.getenv("TELEGRAM_API_HASH") # API Hash: Get it from https://my.telegram.org
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Bot token: Get it from @BotFather
+API_ID = os.getenv(
+    "TELEGRAM_API_ID"
+)  # API ID: Get it from https://my.telegram.org
+API_HASH = os.getenv(
+    "TELEGRAM_API_HASH"
+)  # API Hash: Get it from https://my.telegram.org
 
 if not all([BOT_TOKEN, API_ID, API_HASH]):
-    logger.critical(f"{i} is required. It seems you haven't set it in the environment variables.\n\nSet it using export {i}=your_secret" for i in ["TELEGRAM_BOT_TOKEN", "TELEGRAM_API_ID", "TELEGRAM_API_HASH"])
+    logger.critical(
+        f"{i} is required. It seems you haven't set it in the environment variables.\n\nSet it using export {i}='your_secret'"
+        for i in ["TELEGRAM_BOT_TOKEN", "TELEGRAM_API_ID", "TELEGRAM_API_HASH"]
+    )
     sys.exit(1)
 
 
@@ -71,10 +74,10 @@ client_kwargs: Dict[str, Any] = {
     "name": "pykeyboard_showcase_bot",
     "bot_token": BOT_TOKEN,
     "api_id": API_ID,
-    "api_hash": API_HASH
+    "api_hash": API_HASH,
 }
 
-client_kwargs["in_memory"] = True # Uncomment for sqlite persistent sessions
+client_kwargs["in_memory"] = True  # Uncomment for sqlite persistent sessions
 
 # client_kwargs["test_mode"] = True # Uncomment for test mode
 
@@ -84,18 +87,21 @@ app: Client = Client(**client_kwargs)
 
 # State
 user_states: Dict[int, Dict[str, Any]] = {}
-click_state = {}
+
 
 # Helpers
 def python_version_str() -> str:
     import sys
+
     v = sys.version_info
     return f"{v.major}.{v.minor}.{v.micro}"
+
 
 def truncate(text: str, limit: int = 1500) -> str:
     if len(text) <= limit:
         return text
     return text[:limit] + "\n\n… (truncated)"
+
 
 def main_menu_keyboard() -> InlineKeyboard:
     kb = InlineKeyboard(row_width=2)
@@ -111,6 +117,7 @@ def main_menu_keyboard() -> InlineKeyboard:
     )
     return kb
 
+
 def pagination_menu_keyboard() -> InlineKeyboard:
     kb = InlineKeyboard(row_width=3)
     kb.add(
@@ -123,10 +130,13 @@ def pagination_menu_keyboard() -> InlineKeyboard:
     )
     return kb
 
+
 def builder_menu_keyboard() -> InlineKeyboard:
     kb = InlineKeyboard(row_width=2)
     kb.add(
-        InlineButton(text="✅ Confirmation", callback_data="build:confirmation"),
+        InlineButton(
+            text="✅ Confirmation", callback_data="build:confirmation"
+        ),
         InlineButton(text="📋 Menu", callback_data="build:menu"),
         InlineButton(text="⭐ Rating", callback_data="build:rating"),
         InlineButton(text="📄 Pagination", callback_data="build:pagination"),
@@ -135,16 +145,30 @@ def builder_menu_keyboard() -> InlineKeyboard:
     )
     return kb
 
+
 def error_menu_keyboard() -> InlineKeyboard:
     kb = InlineKeyboard(row_width=2)
     kb.add(
-        InlineButton(text="🚨 Trigger Pagination Error", callback_data="error:pagination"),
-        InlineButton(text="🌍 Trigger Locale Error", callback_data="error:locale"),
-        InlineButton(text="✅ Trigger Validation Error", callback_data="error:validation"),
-        InlineButton(text="⚙️ Trigger Config Error", callback_data="error:config"),
+        InlineButton(
+            text="🚨 Trigger Pagination Error", callback_data="error:pagination"
+        ),
+        InlineButton(
+            text="🔄 Trigger Duplicate Prevention",
+            callback_data="error:duplicate",
+        ),
+        InlineButton(
+            text="🌍 Trigger Locale Error", callback_data="error:locale"
+        ),
+        InlineButton(
+            text="✅ Trigger Validation Error", callback_data="error:validation"
+        ),
+        InlineButton(
+            text="⚙️ Trigger Config Error", callback_data="error:config"
+        ),
         InlineButton(text="⏪ Main", callback_data="menu:main"),
     )
     return kb
+
 
 def help_text() -> str:
     return f"""
@@ -168,6 +192,7 @@ This bot demonstrates core and advanced features of PyKeyboard.
 Use /start for the main menu, /status for a quick summary.
 """
 
+
 # Commands
 @app.on_message(filters.command("start"))
 async def cmd_start(client: Client, message: Message):
@@ -186,9 +211,11 @@ Library: {LIBRARY_NAME} • Python: {python_version_str()}
 """
     await message.reply_text(welcome, reply_markup=main_menu_keyboard())
 
+
 @app.on_message(filters.command("help"))
 async def cmd_help(client: Client, message: Message):
     await message.reply_text(help_text(), reply_markup=main_menu_keyboard())
+
 
 @app.on_message(filters.command("status"))
 async def cmd_status(client: Client, message: Message):
@@ -202,19 +229,22 @@ Active users: {len(user_states)}
 """
     await message.reply_text(status)
 
+
 # Callback handler
 @app.on_callback_query()
 async def on_callback(client: Client, callback: CallbackQuery):
     data = callback.data or ""
     user_id = callback.from_user.id
     user_states.setdefault(user_id, {"menu": "main"})
-    if user_id not in click_state:
-        click_state[user_id] = {"clicks": 0}
+
     try:
         # Navigation
         if data == "menu:main":
             user_states[user_id]["menu"] = "main"
-            await callback.edit_message_text("Select a feature to explore:", reply_markup=main_menu_keyboard())
+            await callback.edit_message_text(
+                "Select a feature to explore:",
+                reply_markup=main_menu_keyboard(),
+            )
 
         elif data == "menu:inline":
             kb = InlineKeyboard(row_width=3)
@@ -243,7 +273,7 @@ async def on_callback(client: Client, callback: CallbackQuery):
                 ")\n"
                 " await client.send_message(chat_id, 'Your message text here', reply_markup=kb)\n"
                 "```",
-                reply_markup=kb
+                reply_markup=kb,
             )
 
         elif data == "menu:reply":
@@ -251,7 +281,7 @@ async def on_callback(client: Client, callback: CallbackQuery):
             kb = ReplyKeyboard(
                 resize_keyboard=True,
                 one_time_keyboard=False,
-                placeholder="Choose an option..."
+                placeholder="Choose an option...",
             )
             kb.row(
                 ReplyButton(text="📱 Share Contact", request_contact=True),
@@ -310,42 +340,38 @@ await callback.edit_message_text(
     reply_markup=kb,
 )
 ```
-{page_edge_case}
                 """
-
 
                 total = int(data.split(":")[-1])
                 current = max(1, min(total, (total + 1) // 2))  # middle page
+
                 kb = InlineKeyboard()
                 kb.paginate(total, current, "page:{number}")
-                kb.row(InlineButton(text="⏪ Back", callback_data="menu:pagination"))
+                kb.row(
+                    InlineButton(
+                        text="⏪ Back", callback_data="menu:pagination"
+                    )
+                )
 
-                clicks = click_state[user_id]["clicks"]
-
-                if clicks in {0, 1, 2} and current in {1, total}:
-                    match clicks:
-                        case 0:
-                            click_state[user_id]["clicks"]=1
-                        case 1:
-                            click_state[user_id]["clicks"]=2
-                        case 2:
-                            click_state[user_id]["clicks"]=0
-
-                logger.info(f"total: {total} | page: {current} | Clicks: {click_state[user_id]['clicks']}".upper())
-                if click_state[user_id]['clicks'] > 1:
-                    await callback.answer(f"You clicked this button already! Click other buttons to Explore.", show_alert=True)
-                    return
-                page_edge_case = "**__You can use states management to prevent `MessageNotModifiedError` from Telegram: The Error is sent when you try to edit the same message multiple times with the same content.__**\n\n__This feature will be added in the future.__" if click_state[user_id]['clicks'] == 1 else ""
                 await callback.edit_message_text(
                     f"📄 <b>Pagination</b>\nTotal: {total} • Current: {current}\n\n"
                     "Code to reproduce keyboard:\n\n"
-                    f"{reproducing_code.format(total=total, current=current, page_edge_case=page_edge_case, number="number")}".strip(),
+                    f"{reproducing_code.format(total=total, current=current, number="number")}".strip(),
                     reply_markup=kb,
                 )
             except Exception as e:
-                if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
+                if isinstance(
+                    e,
+                    (
+                        PaginationError,
+                        LocaleError,
+                        ValidationError,
+                        ConfigurationError,
+                    ),
+                ):
                     await callback.edit_message_text(
-                        f"🚨 {type(e).__name__} occurred.\n" + truncate(e.get_full_report()),
+                        f"🚨 {type(e).__name__} occurred.\n"
+                        + truncate(e.get_full_report()),
                         reply_markup=main_menu_keyboard(),
                     )
                 else:
@@ -365,7 +391,6 @@ await callback.edit_message_text(
     reply_markup=kb,
 )
 ```
-{page_edge_case}
                 """
             # dynamic navigation for pagination keyboards
             try:
@@ -379,34 +404,44 @@ await callback.edit_message_text(
                         total = int(token)
                         break
 
-                # Store pagination context to prevent MessageNotModifiedError from Telegram
-                clicks = click_state[user_id]["clicks"]
-                if clicks in {0, 1, 2} and page in {1, total}:
-                    match clicks:
-                        case 0:
-                            click_state[user_id]["clicks"]=1
-                        case 1:
-                            click_state[user_id]["clicks"]=2
-                        case 2:
-                            click_state[user_id]["clicks"]=0
-                logger.info(f"total: {total} | page: {page} | Clicks: {click_state[user_id]['clicks']}".upper())
-                if click_state[user_id]["clicks"] > 1:
-                    await callback.answer(f"You clicked this button already! Click other buttons to explore.", show_alert=True)
-                    return
+                # Set contextvar for this user
+                pagination_client_context.set(f"user_{user_id}")
+
                 kb = InlineKeyboard()
                 kb.paginate(total, page, "page:{number}")
-                kb.row(InlineButton(text="⏪ Back", callback_data="menu:pagination"))
-                page_edge_case = "**__You can use states management to prevent `MessageNotModifiedError` from Telegram: The Error is sent when you try to edit the same message multiple times with the same content.__**\n\n__This feature will be added in the future.__" if click_state[user_id]["clicks"] == 1 else ""
+                kb.row(
+                    InlineButton(
+                        text="⏪ Back", callback_data="menu:pagination"
+                    )
+                )
                 await callback.edit_message_text(
                     f"📄 <b>Pagination</b>\nTotal: {total} • Current: {page}\n\n"
                     "Code to reproduce keyboard:\n\n"
-                    f"{reproducing_code.format(total=total, page=page, page_edge_case=page_edge_case, number="number")}".strip(),
+                    f"{reproducing_code.format(total=total, page=page, number="number")}".strip(),
                     reply_markup=kb,
                 )
+            except PaginationUnchangedError as e:
+                # Handle duplicate prevention - log and skip message edit
+                logger.info(
+                    f"Pagination duplicate prevented for user {user_id}: {e.message}"
+                )
+                await callback.answer(
+                    "Keyboard unchanged - duplicate prevented!", show_alert=True
+                )
+                return
             except Exception as e:
-                if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
+                if isinstance(
+                    e,
+                    (
+                        PaginationError,
+                        LocaleError,
+                        ValidationError,
+                        ConfigurationError,
+                    ),
+                ):
                     await callback.edit_message_text(
-                        f"🚨 {type(e).__name__} occurred.\n" + truncate(e.get_full_report()),
+                        f"🚨 {type(e).__name__} occurred.\n"
+                        + truncate(e.get_full_report()),
                         reply_markup=main_menu_keyboard(),
                     )
                 else:
@@ -420,7 +455,17 @@ await callback.edit_message_text(
             # Add a couple of custom locales for demo
             kb.add_custom_locale("en_PIRATE", "🏴‍☠️ Pirate English")
             kb.add_custom_locale("en_HACKER", "👨‍💻 Hacker Speak")
-            locales = ["en_US", "es_ES", "fr_FR", "de_DE", "it_IT", "pt_BR", "ru_RU", "en_PIRATE", "en_HACKER"]
+            locales = [
+                "en_US",
+                "es_ES",
+                "fr_FR",
+                "de_DE",
+                "it_IT",
+                "pt_BR",
+                "ru_RU",
+                "en_PIRATE",
+                "en_HACKER",
+            ]
             kb.languages("lang:{locale}", locales, row_width=2)
             kb.row(InlineButton(text="⏪ Main", callback_data="menu:main"))
             await callback.edit_message_text(
@@ -472,42 +517,63 @@ await callback.edit_message_text(
                     kb = KeyboardFactory.create_confirmation_keyboard(
                         yes_text="✅ Confirm",
                         no_text="❌ Cancel",
-                        cancel_text="⏪ Back"
+                        cancel_text="⏪ Back",
                     )
                 elif kind == "menu":
                     kb = KeyboardFactory.create_menu_keyboard(
-                        {"Home": "home", "Settings": "settings", "Help": "help"},
+                        {
+                            "Home": "home",
+                            "Settings": "settings",
+                            "Help": "help",
+                        },
                         callback_pattern="menu:{action}",
-                        columns=2
+                        columns=2,
                     )
                 elif kind == "rating":
-                    kb = KeyboardFactory.create_rating_keyboard(5, callback_pattern="rate:{stars}", include_labels=True)
+                    kb = KeyboardFactory.create_rating_keyboard(
+                        5, callback_pattern="rate:{stars}", include_labels=True
+                    )
                 elif kind == "pagination":
                     kb = KeyboardFactory.create_pagination_keyboard(
                         total_pages=9,
                         current_page=5,
                         callback_pattern="page:{number}",
-                        include_buttons=[{"text": "Close", "callback_data": "action:close"}]
+                        include_buttons=[
+                            {"text": "Close", "callback_data": "action:close"}
+                        ],
                     )
                 elif kind == "language":
                     kb = KeyboardFactory.create_language_keyboard(
                         locales=["en_US", "es_ES", "de_DE", "fr_FR"],
                         callback_pattern="lang:{locale}",
-                        row_width=2
+                        row_width=2,
                     )
                 else:
                     kb = InlineKeyboard()
                     kb.add(InlineButton(text="Unknown", callback_data="noop"))
-                kb.row(InlineButton(text="⏪ Builder Menu", callback_data="menu:builder"))
+                kb.row(
+                    InlineButton(
+                        text="⏪ Builder Menu", callback_data="menu:builder"
+                    )
+                )
                 await callback.edit_message_text(
                     f"🏗️ <b>Builder: {kind.title()}</b>"
                     "Dive into docs for [more info](https://github.com/johnnie-610/pykeyboard).",
                     reply_markup=kb,
                 )
             except Exception as e:
-                if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
+                if isinstance(
+                    e,
+                    (
+                        PaginationError,
+                        LocaleError,
+                        ValidationError,
+                        ConfigurationError,
+                    ),
+                ):
                     await callback.edit_message_text(
-                        f"🚨 {type(e).__name__} occurred.\n" + truncate(e.get_full_report()),
+                        f"🚨 {type(e).__name__} occurred.\n"
+                        + truncate(e.get_full_report()),
                         reply_markup=builder_menu_keyboard(),
                     )
                 else:
@@ -525,7 +591,9 @@ await callback.edit_message_text(
                 for i in range(runs):
                     k = InlineKeyboard()
                     k.add(
-                        InlineButton(text=f"Btn{i%5}", callback_data=f"b:{i%5}"),
+                        InlineButton(
+                            text=f"Btn{i%5}", callback_data=f"b:{i%5}"
+                        ),
                         InlineButton(text=f"X{i%3}", callback_data=f"x:{i%3}"),
                         InlineButton(text=f"Y{i%7}", callback_data=f"y:{i%7}"),
                     )
@@ -545,12 +613,23 @@ await callback.edit_message_text(
                     "This is done automatically, no need to worry about it."
                 )
                 back = InlineKeyboard()
-                back.add(InlineButton(text="⏪ Main", callback_data="menu:main"))
+                back.add(
+                    InlineButton(text="⏪ Main", callback_data="menu:main")
+                )
                 await callback.edit_message_text(msg, reply_markup=back)
             except Exception as e:
-                if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
+                if isinstance(
+                    e,
+                    (
+                        PaginationError,
+                        LocaleError,
+                        ValidationError,
+                        ConfigurationError,
+                    ),
+                ):
                     await callback.edit_message_text(
-                        f"🚨 {type(e).__name__} occurred.\n" + truncate(e.get_full_report()),
+                        f"🚨 {type(e).__name__} occurred.\n"
+                        + truncate(e.get_full_report()),
                         reply_markup=main_menu_keyboard(),
                     )
                 else:
@@ -560,7 +639,9 @@ await callback.edit_message_text(
                     )
 
         elif data == "menu:help":
-            await callback.edit_message_text(help_text(), reply_markup=main_menu_keyboard())
+            await callback.edit_message_text(
+                help_text(), reply_markup=main_menu_keyboard()
+            )
 
         # Error handling demos
         elif data.startswith("error:"):
@@ -569,15 +650,31 @@ await callback.edit_message_text(
                 if error_type == "pagination":
                     # Trigger pagination error
                     kb = InlineKeyboard()
-                    kb.paginate(0, 1, "page_{number}")  # This will raise PaginationError
+                    kb.paginate(
+                        0, 1, "page_{number}"
+                    )  # This will raise PaginationError
+                elif error_type == "duplicate":
+                    # Trigger duplicate prevention error
+                    kb = InlineKeyboard()
+                    kb.paginate(
+                        5, 3, "page_{number}"
+                    )  # First call - should work
+                    kb.paginate(
+                        5, 3, "page_{number}"
+                    )  # Second call - should raise PaginationUnchangedError
                 elif error_type == "locale":
                     # Trigger locale error
                     kb = InlineKeyboard()
-                    kb.languages("invalid_pattern", ["en_US"])  # Missing {locale}
+                    kb.languages(
+                        "invalid_pattern", ["en_US"]
+                    )  # Missing {locale}
                 elif error_type == "validation":
                     # Trigger validation error by creating invalid button
                     from pykeyboard.keyboard_base import Button
-                    invalid_button = Button(text="")  # Empty text will raise ValidationError
+
+                    invalid_button = Button(
+                        text=""
+                    )  # Empty text will raise ValidationError
                 elif error_type == "config":
                     # Trigger configuration error
                     kb = InlineKeyboard(row_width=0)  # Invalid row_width
@@ -593,10 +690,20 @@ await callback.edit_message_text(
                         "Try triggering different errors above to see the enhanced messages!"
                     )
                     kb = InlineKeyboard()
-                    kb.add(InlineButton(text="⏪ Error Menu", callback_data="menu:errors"))
+                    kb.add(
+                        InlineButton(
+                            text="⏪ Error Menu", callback_data="menu:errors"
+                        )
+                    )
                     await callback.edit_message_text(help_msg, reply_markup=kb)
                     return
-            except (PaginationError, LocaleError, ValidationError, ConfigurationError) as e:
+            except (
+                PaginationError,
+                PaginationUnchangedError,
+                LocaleError,
+                ValidationError,
+                ConfigurationError,
+            ) as e:
                 # Handle PyKeyboard errors with enhanced display
                 help_msg = e.get_help_message()
                 full_report = e.get_full_report()
@@ -612,8 +719,13 @@ await callback.edit_message_text(
 
                 kb = InlineKeyboard()
                 kb.add(
-                    InlineButton(text="📋 Full Report", callback_data=f"error:full_{error_type}"),
-                    InlineButton(text="⏪ Error Menu", callback_data="menu:errors")
+                    InlineButton(
+                        text="📋 Full Report",
+                        callback_data=f"error:full_{error_type}",
+                    ),
+                    InlineButton(
+                        text="⏪ Error Menu", callback_data="menu:errors"
+                    ),
                 )
                 await callback.edit_message_text(response, reply_markup=kb)
                 return
@@ -643,15 +755,24 @@ await callback.edit_message_text(
             if action == "url":
                 # Demonstrate sending an URL button in a follow-up keyboard
                 kb = InlineKeyboard()
-                kb.add(InlineButton(text="Open GitHub", url="https://github.com/johnnie-610/pykeyboard"))
+                kb.add(
+                    InlineButton(
+                        text="Open GitHub",
+                        url="https://github.com/johnnie-610/pykeyboard",
+                    )
+                )
                 kb.row(InlineButton(text="⏪ Main", callback_data="menu:main"))
                 await callback.edit_message_text(
                     "🔗 <b>URL Button</b>\nOpen the project repository:",
-                    reply_markup=kb
+                    reply_markup=kb,
                 )
             else:
                 emoji_map = {
-                    "like": "👍", "dislike": "👎", "love": "❤️", "fire": "🔥", "star": "⭐"
+                    "like": "👍",
+                    "dislike": "👎",
+                    "love": "❤️",
+                    "fire": "🔥",
+                    "star": "⭐",
                 }
                 emoji = emoji_map.get(action, "🎯")
                 await callback.edit_message_text(
@@ -672,7 +793,16 @@ await callback.edit_message_text(
             reply_markup=main_menu_keyboard(),
         )
     except Exception as e:
-        if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
+        if isinstance(
+            e,
+            (
+                PaginationError,
+                PaginationUnchangedError,
+                LocaleError,
+                ValidationError,
+                ConfigurationError,
+            ),
+        ):
             await callback.edit_message_text(
                 f"🚨 <b>{type(e).__name__}</b>\n{truncate(e.get_full_report())}",
                 reply_markup=main_menu_keyboard(),
@@ -685,6 +815,7 @@ await callback.edit_message_text(
                 reply_markup=main_menu_keyboard(),
             )
 
+
 @app.on_message()
 async def on_message(client: Client, message: Message):
     text = message.text or ""
@@ -693,25 +824,54 @@ async def on_message(client: Client, message: Message):
             rm = ReplyKeyboardRemove(selective=False)
             await message.reply_text("Keyboard removed.", reply_markup=rm)
         except Exception as e:
-            if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
-                await message.reply_text(f"Failed to remove keyboard: {e.get_help_message()[:100]}...")
+            if isinstance(
+                e,
+                (
+                    PaginationError,
+                    PaginationUnchangedError,
+                    LocaleError,
+                    ValidationError,
+                    ConfigurationError,
+                ),
+            ):
+                await message.reply_text(
+                    f"Failed to remove keyboard: {e.get_help_message()[:100]}..."
+                )
             else:
-                await message.reply_text(f"Failed to remove keyboard: {type(e).__name__}: {e}")
+                await message.reply_text(
+                    f"Failed to remove keyboard: {type(e).__name__}: {e}"
+                )
     elif text == "📝 Force Reply":
         try:
             fr = ForceReply(selective=True, placeholder="Please reply...")
-            await message.reply_text("Forcing reply to this message.", reply_markup=fr)
+            await message.reply_text(
+                "Forcing reply to this message.", reply_markup=fr
+            )
         except Exception as e:
-            if isinstance(e, (PaginationError, LocaleError, ValidationError, ConfigurationError)):
-                await message.reply_text(f"Failed to force reply: {e.get_help_message()[:100]}...")
+            if isinstance(
+                e,
+                (
+                    PaginationError,
+                    PaginationUnchangedError,
+                    LocaleError,
+                    ValidationError,
+                    ConfigurationError,
+                ),
+            ):
+                await message.reply_text(
+                    f"Failed to force reply: {e.get_help_message()[:100]}..."
+                )
             else:
-                await message.reply_text(f"Failed to force reply: {type(e).__name__}: {e}")
+                await message.reply_text(
+                    f"Failed to force reply: {type(e).__name__}: {e}"
+                )
     elif text and not text.startswith("/"):
         await message.reply_text(
             "💬 <b>Message Received</b>\n"
             f"• Text length: {len(text)}\n"
             "• Use /start to open main menu"
         )
+
 
 async def main():
     print("🤖 Starting PyKeyboard Showcase Bot")
@@ -722,23 +882,9 @@ async def main():
     try:
         await app.start()
         print("✅ Bot started. Send /start in Telegram.")
-        # idle handling
-        idle_fn = None
-        try:
-            # pyrogram >= 2
-            from pyrogram import idle as _idle  # type: ignore
-            idle_fn = _idle
-        except Exception:
-            try:
-                from pyrogram.methods.utilities.idle import idle as _idle  # type: ignore
-                idle_fn = _idle
-            except Exception:
-                idle_fn = None
-        if idle_fn:
-            await idle_fn()
-        else:
-            # Fallback: wait forever
-            await asyncio.Event().wait()
+
+        await idle()
+
     except KeyboardInterrupt:
         print("\n⏹️ Stopping…")
     except Exception as e:
@@ -749,6 +895,7 @@ async def main():
         except Exception:
             pass
         print("🧹 Cleanup complete")
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
