@@ -1,32 +1,32 @@
-name: Deploy to PyPI
+# name: Deploy to PyPI
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.12
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: 3.12
 
-      - name: Install Poetry
-        run: |
-          pip install poetry
-          poetry install
+#       - name: Install Poetry
+#         run: |
+#           pip install poetry
+#           poetry install
 
-      - name: Build and publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          poetry config http-basic.pypi __token__ ${{ secrets.PYPI_TOKEN }}
-          poetry publish --build
+#       - name: Build and publish to PyPI
+#         env:
+#           TWINE_USERNAME: __token__
+#           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+#         run: |
+#           poetry config http-basic.pypi __token__ ${{ secrets.PYPI_TOKEN }}
+#           poetry publish --build
