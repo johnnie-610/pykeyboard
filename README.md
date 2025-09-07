@@ -11,7 +11,7 @@
 
 # PyKeyboard
 
-**Modern, Type-Safe Keyboard Library for Kurigram**
+**Best Keyboard Library for Kurigram**
 
 PyKeyboard is a comprehensive Python library for creating beautiful and functional inline and reply keyboards for Telegram bots using [Kurigram](https://pypi.org/project/kurigram).
 
