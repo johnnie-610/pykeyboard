@@ -32,7 +32,7 @@ keyboard.add(
 async def start_command(client, message):
     await message.reply_text(
         "Choose an option:",
-        reply_markup=keyboard.pyrogram_markup
+        reply_markup=keyboard
     )
 
 @app.on_callback_query()

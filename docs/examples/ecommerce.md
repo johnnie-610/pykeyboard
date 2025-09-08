@@ -111,7 +111,7 @@ async def start_command(client, message):
     await message.reply_text(
         "🛍️ **Welcome to our Store!**\n\n"
         "Browse our products and add them to your cart:",
-        reply_markup=keyboard.pyrogram_markup
+        reply_markup=keyboard
     )
 
 @app.on_callback_query(filters.regex(r"^page:"))
@@ -124,7 +124,7 @@ async def handle_pagination(client, callback_query):
     await callback_query.edit_message_text(
         f"🛍️ **Products (Page {page}/{total_pages})**\n\n"
         "Browse our products:",
-        reply_markup=keyboard.pyrogram_markup
+        reply_markup=keyboard
     )
     await callback_query.answer()
 
@@ -162,7 +162,7 @@ async def handle_view_cart(client, callback_query):
         total = sum(item['price'] * item['quantity'] for item in cart_items)
         cart_text += f"\n**Total: ${total:.2f}**"
 
-    await callback_query.edit_message_text(cart_text, reply_markup=keyboard.pyrogram_markup)
+    await callback_query.edit_message_text(cart_text, reply_markup=keyboard)
     await callback_query.answer()
 
 @app.on_callback_query(filters.regex(r"^checkout$"))
@@ -188,7 +188,7 @@ async def handle_checkout(client, callback_query):
         order_summary += f"• {item['name']} x{item['quantity']} - ${item['price'] * item['quantity']:.2f}\n"
     order_summary += f"\n**Total: ${total:.2f}**\n\nConfirm your order?"
 
-    await callback_query.edit_message_text(order_summary, reply_markup=keyboard.pyrogram_markup)
+    await callback_query.edit_message_text(order_summary, reply_markup=keyboard)
     await callback_query.answer()
 
 @app.on_callback_query(filters.regex(r"^order_"))
@@ -211,13 +211,13 @@ async def handle_order_confirmation(client, callback_query):
             "You will receive a confirmation email shortly.",
             reply_markup=InlineKeyboard().add(
                 InlineButton("🛍️ Continue Shopping", callback_data="page:1")
-            ).pyrogram_markup
+            )
         )
     else:
         await callback_query.edit_message_text(
             "❌ Order cancelled.\n\n"
             "You can continue shopping:",
-            reply_markup=create_product_keyboard(get_products_page(1), 1, (len(PRODUCTS) + 2) // 3).pyrogram_markup
+            reply_markup=create_product_keyboard(get_products_page(1), 1, (len(PRODUCTS) + 2) // 3)
         )
 
     await callback_query.answer()

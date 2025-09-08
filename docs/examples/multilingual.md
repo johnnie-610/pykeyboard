@@ -133,14 +133,14 @@ async def start_command(client, message):
         keyboard = create_welcome_keyboard()
         await message.reply_text(
             t(user_id, "welcome"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
     else:
         # Show main menu in user's language
         keyboard = create_main_menu_keyboard(user_id)
         await message.reply_text(
             t(user_id, "main_menu"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
 @app.on_callback_query(filters.regex(r"^set_lang:"))
@@ -155,7 +155,7 @@ async def handle_language_selection(client, callback_query):
     keyboard = create_main_menu_keyboard(user_id)
     await callback_query.edit_message_text(
         t(user_id, "main_menu"),
-        reply_markup=keyboard.pyrogram_markup
+        reply_markup=keyboard
     )
     await callback_query.answer(f"Language set to {locale[:2].upper()}!")
 
@@ -168,14 +168,14 @@ async def handle_menu_navigation(client, callback_query):
         keyboard = create_main_menu_keyboard(user_id)
         await callback_query.edit_message_text(
             t(user_id, "main_menu"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "settings":
         keyboard = create_settings_keyboard(user_id)
         await callback_query.edit_message_text(
             t(user_id, "settings"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "profile":
@@ -183,21 +183,21 @@ async def handle_menu_navigation(client, callback_query):
         keyboard.add(InlineButton("⬅️ " + t(user_id, "back"), callback_data="menu:main"))
         await callback_query.edit_message_text(
             t(user_id, "profile"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "help":
         keyboard = create_main_menu_keyboard(user_id)
         await callback_query.edit_message_text(
             t(user_id, "help"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "dashboard":
         keyboard = create_main_menu_keyboard(user_id)
         await callback_query.edit_message_text(
             t(user_id, "dashboard"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     await callback_query.answer()
@@ -212,7 +212,7 @@ async def handle_settings(client, callback_query):
         keyboard.languages("set_lang:{locale}", ["en_US", "es_ES", "fr_FR", "de_DE"])
         await callback_query.edit_message_text(
             t(user_id, "language"),
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     await callback_query.answer()
@@ -224,7 +224,7 @@ async def change_language_command(client, message):
     keyboard = create_welcome_keyboard()
     await message.reply_text(
         t(user_id, "welcome"),
-        reply_markup=keyboard.pyrogram_markup
+        reply_markup=keyboard
     )
 
 # Add custom locale example

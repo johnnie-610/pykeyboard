@@ -68,7 +68,7 @@ async def start_command(client, message):
     keyboard = create_main_menu()
     await message.reply_text(
         "🏠 **Main Menu**\n\nWelcome! Choose an option:",
-        reply_markup=keyboard.pyrogram_markup
+        reply_markup=keyboard
     )
 
 @app.on_callback_query(filters.regex(r"^menu:"))
@@ -81,7 +81,7 @@ async def handle_menu_navigation(client, callback_query):
         keyboard = create_main_menu()
         await callback_query.edit_message_text(
             "🏠 **Main Menu**\n\nChoose an option:",
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "settings":
@@ -89,7 +89,7 @@ async def handle_menu_navigation(client, callback_query):
         keyboard = create_settings_menu()
         await callback_query.edit_message_text(
             "⚙️ **Settings**\n\nConfigure your preferences:",
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "profile":
@@ -97,7 +97,7 @@ async def handle_menu_navigation(client, callback_query):
         keyboard = create_profile_menu()
         await callback_query.edit_message_text(
             "👤 **Profile**\n\nManage your profile:",
-            reply_markup=keyboard.pyrogram_markup
+            reply_markup=keyboard
         )
 
     elif menu_action == "help":
@@ -107,7 +107,7 @@ async def handle_menu_navigation(client, callback_query):
             "• Settings: Configure preferences\n"
             "• Profile: Manage your account\n\n"
             "Use the Back buttons to navigate.",
-            reply_markup=create_main_menu().pyrogram_markup
+            reply_markup=create_main_menu()
         )
 
     await callback_query.answer()
