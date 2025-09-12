@@ -7,6 +7,7 @@
 #
 # pykeyboard/builder.py
 
+import logging
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
@@ -18,6 +19,7 @@ from .reply_keyboard import ReplyButton, ReplyKeyboard
 
 T = TypeVar("T", bound=KeyboardBase)
 
+logger = logging.getLogger("pykeyboard.builder")
 
 class KeyboardBuilder:
     """Fluent API builder for type-safe keyboard construction.

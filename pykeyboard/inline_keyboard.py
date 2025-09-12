@@ -11,7 +11,7 @@ import contextvars
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 
-from loguru import logger
+import logging
 from pydantic import Field, PrivateAttr, model_validator
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -23,6 +23,8 @@ from .keyboard_base import InlineButton, KeyboardBase
 pagination_client_context: contextvars.ContextVar[Optional[str]] = (
     contextvars.ContextVar("pagination_client_context", default=None)
 )
+
+logger = logging.getLogger("pykeyboard.inline_keyboard")
 
 # Storage for pagination hashes
 _pagination_hashes: Dict[str, str] = {}

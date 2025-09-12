@@ -6,7 +6,7 @@
 # This file is part of the pykeyboard-kurigram library
 #
 # pykeyboard/visualization.py
-
+import logging
 import json
 from typing import Any, Dict, List, Optional
 
@@ -14,6 +14,7 @@ from .inline_keyboard import InlineKeyboard
 from .keyboard_base import KeyboardBase
 from .reply_keyboard import ReplyKeyboard
 
+logger = logging.getLogger("pykeyboard.visualization")
 
 class KeyboardVisualizer:
     """Advanced keyboard visualization and debugging utilities.

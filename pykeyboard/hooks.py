@@ -7,13 +7,14 @@
 #
 # pykeyboard/hooks.py
 
-import re
+import logging
 from typing import Any, Callable, Dict, List, Optional, Protocol, Union
 
 from .inline_keyboard import InlineKeyboard
 from .keyboard_base import KeyboardBase
 from .reply_keyboard import ReplyKeyboard
 
+logger = logging.getLogger("pykeyboard.hooks")
 
 class ValidationHook(Protocol):
     """Protocol for validation hook functions."""

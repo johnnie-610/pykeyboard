@@ -5,16 +5,26 @@
 #
 # This file is part of the pykeyboard-kurigram library
 #
-# pykeyboard/erros.py
+# pykeyboard/errors.py
 
 
 import hashlib
 import inspect
 import json
+import logging
 import traceback
 from typing import Any, Dict, Optional, Union
 
-from loguru import logger
+logger = logging.getLogger("pykeyboard")
+if not logger.handlers:
+    # Basic default handler if the application didn't configure logging.
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 
 def capture_traceback_info(skip_frames: int = 0) -> Dict[str, Any]:

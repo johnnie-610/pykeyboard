@@ -6,7 +6,7 @@
 # This file is part of the pykeyboard-kurigram library
 #
 # pykeyboard/keyboard_base.py
-
+import logging
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
@@ -18,6 +18,7 @@ from pykeyboard.errors import ValidationError
 if TYPE_CHECKING:
     pass
 
+logger = logging.getLogger("pykeyboard.keyboard_base")
 
 class KeyboardBase(BaseModel):
     """Base class for keyboard implementations with row-based layout.

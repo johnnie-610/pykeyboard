@@ -6,7 +6,7 @@ site_url: https://pykeyboard.readthedocs.io/
 # Repository
 repo_name: johnnie-610/pykeyboard
 repo_url: https://github.com/johnnie-610/pykeyboard
-# edit_uri: edit/main/docs/
+edit_uri: edit/main/docs/
 
 # Theme
 theme:
@@ -33,8 +33,8 @@ theme:
         name: Switch to system preference
   features:
     - announce.dismiss
-    # - content.action.edit
-    # - content.action.view
+    - content.action.edit
+    - content.action.view
     - content.code.annotate
     - content.code.copy
     - content.code.select

@@ -9,11 +9,13 @@
 
 import statistics
 import time
+import logging
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from .inline_keyboard import InlineKeyboard
 from .reply_keyboard import ReplyKeyboard
 
+logger = logging.getLogger("pykeyboard.performance")
 
 class KeyboardProfiler:
     """Performance profiler for keyboard operations.
