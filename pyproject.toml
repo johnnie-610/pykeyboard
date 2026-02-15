@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pykeyboard-kurigram"
-version = "0.3.0"
+version = "0.3.1"
 description = "Best Keyboard and Pagination for the Kurigram Library."
 authors = ["Johnnie <expose-bright-coat@duck.com>"]
 license = "MIT"
@@ -12,7 +12,7 @@ repository = "https://github.com/johnnie-610/pykeyboard"
 documentation = "https://johnnie-610.github.io/pykeyboard"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pydantic = "^2.11.7"
 kurigram = "^2.1.35"
 
@@ -22,7 +22,7 @@ pre-commit = "^4.3.0"
 pytest = "^8.4.2"
 pytest-cov = "^6.3.0"
 pytest-asyncio = "^1.1.0"
-mkdocs-material = {extras = ["plugins"], version = "^9.6.19"}
+mkdocs-material = { extras = ["plugins"], version = "^9.6.19" }
 mkdocs-minify-plugin = "^0.8.0"
 mkdocs-git-revision-date-localized-plugin = "^1.4.7"
 mkdocs-git-committers-plugin = "^0.2.3"
