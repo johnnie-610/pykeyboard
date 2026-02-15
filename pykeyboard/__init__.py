@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Johnnie
+# Copyright (c) 2025-2026 Johnnie
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -45,8 +45,7 @@ from .reply_keyboard import ReplyButton, ReplyKeyboard
 # Builder and factory utilities
 try:
     from .builder import (KeyboardBuilder, KeyboardFactory,
-                          build_inline_keyboard, build_reply_keyboard,
-                          keyboard_factory)
+                          build_inline_keyboard, build_reply_keyboard)
 
     _builder_available = True
 except ImportError:
@@ -55,11 +54,10 @@ except ImportError:
     KeyboardFactory = None
     build_inline_keyboard = None
     build_reply_keyboard = None
-    keyboard_factory = None
 
 # Validation hooks and middleware
 try:
-    from .hooks import (ButtonValidator, KeyboardHookManager, ValidationHook,
+    from .hooks import (ButtonValidator, KeyboardHookManager,
                         add_keyboard_hook, add_validation_rule,
                         default_hook_manager, default_validator,
                         validate_button, validate_keyboard)
@@ -69,7 +67,6 @@ except ImportError:
     _hooks_available = False
     ButtonValidator = None
     KeyboardHookManager = None
-    ValidationHook = None
     validate_button = None
     validate_keyboard = None
     add_validation_rule = None
@@ -77,11 +74,10 @@ except ImportError:
     default_validator = None
     default_hook_manager = None
 
-# Python utilities
+# Utilities
 try:
-    from .utils import (ExportFormat, KeyboardType, create_keyboard_from_config,
-                        export_keyboard_to_file, get_keyboard_info,
-                        import_keyboard_from_file, validate_keyboard_config)
+    from .utils import (create_keyboard_from_config, get_keyboard_info,
+                        validate_keyboard_config)
 
     _utils_available = True
 except ImportError:
@@ -89,10 +85,6 @@ except ImportError:
     create_keyboard_from_config = None
     get_keyboard_info = None
     validate_keyboard_config = None
-    export_keyboard_to_file = None
-    import_keyboard_from_file = None
-    KeyboardType = None
-    ExportFormat = None
 
 # Error reporting system
 try:
@@ -110,7 +102,7 @@ except ImportError:
     LocaleError = None
     ConfigurationError = None
 
-__version__ = "0.2.3"
+__version__ = "0.3.0"
 __all__ = [
     # Core Classes
     "Button",
@@ -122,33 +114,24 @@ __all__ = [
     "ForceReply",
     # Context Variables
     "pagination_client_context",
-    "reset_pagination_client_context",
-    # Hash Management
-    "_pagination_hashes",
     # Builder Pattern
     "KeyboardBuilder",
     "KeyboardFactory",
     "build_inline_keyboard",
     "build_reply_keyboard",
-    "keyboard_factory",
     # Validation System
     "ButtonValidator",
     "KeyboardHookManager",
-    "ValidationHook",
     "validate_button",
     "validate_keyboard",
     "add_validation_rule",
     "add_keyboard_hook",
     "default_validator",
     "default_hook_manager",
-    # Modern Python Utilities
+    # Utilities
     "create_keyboard_from_config",
     "get_keyboard_info",
     "validate_keyboard_config",
-    "export_keyboard_to_file",
-    "import_keyboard_from_file",
-    "KeyboardType",
-    "ExportFormat",
     # Error Reporting System
     "PyKeyboardError",
     "ValidationError",
@@ -157,18 +140,5 @@ __all__ = [
     "LocaleError",
     "ConfigurationError",
 ]
-
-
-if _builder_available:
-    pass  # Already included in __all__
-
-if _hooks_available:
-    pass  # Already included in __all__
-
-if _utils_available:
-    pass  # Already included in __all__
-
-if _errors_available:
-    pass  # Already included in __all__
 
 __author__ = "Johnnie"

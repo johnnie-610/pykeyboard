@@ -1,0 +1,461 @@
+/* ─── PyKeyboard Docs – Custom Styles ─────────────────────────────── */
+
+/* ── Keyframe Animations ─────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.25); }
+  50% { box-shadow: 0 0 16px 4px rgba(20, 184, 166, 0.12); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Color tokens – Light mode ───────────────────────────────────── */
+:root {
+  --md-primary-fg-color: #0d9488;
+  --md-primary-fg-color--light: #5eead4;
+  --md-primary-fg-color--dark: #0f766e;
+  --md-accent-fg-color: #d97706;
+
+  --pk-primary: #0d9488;
+  --pk-primary-light: #5eead4;
+  --pk-primary-muted: #ccfbf1;
+  --pk-accent: #d97706;
+  --pk-accent-light: #fbbf24;
+  --pk-surface: #f8fffe;
+  --pk-surface-hover: rgba(13, 148, 136, 0.04);
+  --pk-border: rgba(13, 148, 136, 0.12);
+  --pk-shadow: rgba(13, 148, 136, 0.08);
+  --pk-shadow-strong: rgba(0, 0, 0, 0.06);
+  --pk-text-badge-method: #1e40af;
+  --pk-bg-badge-method: #dbeafe;
+  --pk-text-badge-prop: #92400e;
+  --pk-bg-badge-prop: #fef3c7;
+  --pk-text-badge-static: #0f766e;
+  --pk-bg-badge-static: #ccfbf1;
+  --pk-text-badge-class: #065f46;
+  --pk-bg-badge-class: #d1fae5;
+}
+
+/* ── Color tokens – Dark mode ────────────────────────────────────── */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #2dd4bf;
+  --md-primary-fg-color--light: #5eead4;
+  --md-primary-fg-color--dark: #14b8a6;
+  --md-accent-fg-color: #fbbf24;
+  --md-default-bg-color: #0c1222;
+  --md-default-bg-color--light: #131b2e;
+
+  --pk-primary: #2dd4bf;
+  --pk-primary-light: #5eead4;
+  --pk-primary-muted: rgba(45, 212, 191, 0.08);
+  --pk-accent: #fbbf24;
+  --pk-accent-light: #fcd34d;
+  --pk-surface: #0c1222;
+  --pk-surface-hover: rgba(45, 212, 191, 0.06);
+  --pk-border: rgba(45, 212, 191, 0.15);
+  --pk-shadow: rgba(0, 0, 0, 0.3);
+  --pk-shadow-strong: rgba(0, 0, 0, 0.4);
+  --pk-text-badge-method: #93c5fd;
+  --pk-bg-badge-method: rgba(30, 58, 95, 0.7);
+  --pk-text-badge-prop: #fcd34d;
+  --pk-bg-badge-prop: rgba(69, 26, 3, 0.7);
+  --pk-text-badge-static: #5eead4;
+  --pk-bg-badge-static: rgba(13, 148, 136, 0.15);
+  --pk-text-badge-class: #6ee7b7;
+  --pk-bg-badge-class: rgba(6, 78, 59, 0.6);
+}
+
+/* ── Typography ──────────────────────────────────────────────────── */
+.md-typeset h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.md-typeset h2 {
+  font-weight: 700;
+  margin-top: 2.4em;
+  padding-bottom: 0.35em;
+  border-bottom: 2px solid var(--pk-border);
+  animation: fadeInUp 0.45s ease-out both;
+}
+
+.md-typeset h3 {
+  font-weight: 600;
+  color: var(--pk-primary);
+  animation: slideIn 0.4s ease-out both;
+}
+
+.md-typeset h4 {
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--md-default-fg-color--light);
+}
+
+/* ── Code blocks ─────────────────────────────────────────────────── */
+.md-typeset code {
+  border-radius: 6px;
+  padding: 0.15em 0.4em;
+  font-size: 0.82em;
+}
+
+.md-typeset pre {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px var(--pk-shadow);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  border: 1px solid var(--pk-border);
+}
+
+.md-typeset pre:hover {
+  box-shadow: 0 6px 24px var(--pk-shadow-strong);
+  transform: translateY(-1px);
+}
+
+.md-typeset pre > code {
+  font-size: 0.82em;
+  line-height: 1.7;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────── */
+.md-typeset table:not([class]) {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px var(--pk-shadow);
+  font-size: 0.88em;
+  animation: fadeInUp 0.5s ease-out both;
+  border: 1px solid var(--pk-border);
+  transition: box-shadow 0.3s ease;
+}
+
+.md-typeset table:not([class]):hover {
+  box-shadow: 0 4px 20px var(--pk-shadow-strong);
+}
+
+.md-typeset table:not([class]) thead {
+  background: linear-gradient(135deg, var(--pk-primary), var(--md-primary-fg-color--dark));
+  color: #fff;
+}
+
+.md-typeset table:not([class]) thead th {
+  font-weight: 600;
+  padding: 0.75em 1em;
+  border: none;
+}
+
+.md-typeset table:not([class]) td {
+  padding: 0.65em 1em;
+  border-bottom: 1px solid var(--pk-border);
+  transition: background 0.2s ease;
+}
+
+.md-typeset table:not([class]) tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.md-typeset table:not([class]) tbody tr:hover {
+  background: var(--pk-surface-hover);
+}
+
+/* ── Admonitions ─────────────────────────────────────────────────── */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 10px;
+  box-shadow: 0 1px 8px var(--pk-shadow);
+  border-left-width: 4px;
+  animation: fadeInUp 0.4s ease-out both;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.md-typeset .admonition:hover,
+.md-typeset details:hover {
+  box-shadow: 0 4px 16px var(--pk-shadow-strong);
+  transform: translateY(-1px);
+}
+
+/* ── API signature badges ────────────────────────────────────────── */
+.md-typeset .api-badge {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 20px;
+  font-size: 0.7em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  margin-left: 0.4em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.md-typeset .api-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px var(--pk-shadow);
+}
+
+.md-typeset .api-badge.method {
+  background: var(--pk-bg-badge-method);
+  color: var(--pk-text-badge-method);
+}
+
+.md-typeset .api-badge.prop {
+  background: var(--pk-bg-badge-prop);
+  color: var(--pk-text-badge-prop);
+}
+
+.md-typeset .api-badge.static {
+  background: var(--pk-bg-badge-static);
+  color: var(--pk-text-badge-static);
+}
+
+.md-typeset .api-badge.class {
+  background: var(--pk-bg-badge-class);
+  color: var(--pk-text-badge-class);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────── */
+.md-tabs {
+  background: linear-gradient(135deg, var(--pk-primary), var(--md-primary-fg-color--dark));
+}
+
+.md-tabs__link {
+  transition: opacity 0.25s ease, transform 0.25s ease !important;
+}
+
+.md-tabs__link:hover {
+  transform: translateY(-1px);
+}
+
+.md-header {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, var(--pk-primary), var(--md-primary-fg-color--dark)) !important;
+}
+
+/* Nav sidebar hover effects */
+.md-nav__link {
+  transition: color 0.2s ease, padding-left 0.25s ease !important;
+  border-radius: 6px;
+}
+
+.md-nav__link:hover {
+  padding-left: 0.5em !important;
+  color: var(--pk-primary) !important;
+}
+
+.md-nav__link--active {
+  color: var(--pk-primary) !important;
+  font-weight: 600;
+}
+
+/* ── Content width ───────────────────────────────────────────────── */
+.md-grid {
+  max-width: 1440px;
+}
+
+/* ── Horizontal rules – gradient line ────────────────────────────── */
+.md-typeset hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--pk-primary-light),
+    var(--pk-accent-light),
+    transparent
+  );
+  margin: 2.5em 0;
+  opacity: 0.6;
+}
+
+/* ── Hero title (landing page) ───────────────────────────────────── */
+.md-typeset .hero-title {
+  font-size: 2.6em;
+  font-weight: 900;
+  background: linear-gradient(
+    135deg,
+    var(--pk-primary),
+    var(--pk-accent),
+    var(--pk-primary-light),
+    var(--pk-accent-light)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease infinite;
+}
+
+/* ── Card-like content sections ──────────────────────────────────── */
+.md-content__inner > .md-typeset > h2 ~ p,
+.md-content__inner > .md-typeset > h2 ~ .highlight,
+.md-content__inner > .md-typeset > h3 ~ p {
+  animation: fadeInUp 0.45s ease-out both;
+}
+
+/* ── Link styles ─────────────────────────────────────────────────── */
+.md-typeset a:not(.md-button):not(.headerlink) {
+  color: var(--pk-primary);
+  text-decoration: none;
+  background-image: linear-gradient(var(--pk-primary-light), var(--pk-primary-light));
+  background-size: 0 2px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s ease, color 0.2s ease;
+}
+
+.md-typeset a:not(.md-button):not(.headerlink):hover {
+  background-size: 100% 2px;
+  color: var(--md-primary-fg-color--dark);
+}
+
+/* ── Material buttons ────────────────────────────────────────────── */
+.md-typeset .md-button {
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+}
+
+.md-typeset .md-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--pk-shadow-strong);
+}
+
+.md-typeset .md-button--primary {
+  background: linear-gradient(135deg, var(--pk-primary), var(--md-primary-fg-color--dark));
+  border-color: transparent;
+}
+
+.md-typeset .md-button--primary:hover {
+  background: linear-gradient(135deg, var(--md-primary-fg-color--dark), var(--pk-primary));
+}
+
+/* ── Smooth transitions ──────────────────────────────────────────── */
+.md-typeset a,
+.md-nav__link,
+.md-tabs__link {
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* ── Search bar polish ───────────────────────────────────────────── */
+.md-search__input {
+  border-radius: 8px !important;
+  transition: box-shadow 0.25s ease;
+}
+
+.md-search__input:focus {
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+}
+
+/* ── Scrollbar styling ───────────────────────────────────────────── */
+.md-sidebar__scrollwrap::-webkit-scrollbar {
+  width: 4px;
+}
+
+.md-sidebar__scrollwrap::-webkit-scrollbar-thumb {
+  background: var(--pk-primary-light);
+  border-radius: 4px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+.md-footer {
+  border-top: 1px solid var(--pk-border);
+}
+
+.md-footer-meta {
+  background: linear-gradient(135deg, var(--md-primary-fg-color--dark), var(--pk-primary));
+}
+
+/* ── Grid cards (feature boxes on landing) ───────────────────────── */
+.md-typeset .grid.cards > ol > li,
+.md-typeset .grid.cards > ul > li {
+  border: 1px solid var(--pk-border);
+  border-radius: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.md-typeset .grid.cards > ol > li:hover,
+.md-typeset .grid.cards > ul > li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px var(--pk-shadow-strong);
+  border-color: var(--pk-primary-light);
+}
+
+/* ── Tabs styling ────────────────────────────────────────────────── */
+.md-typeset .tabbed-labels > label {
+  border-radius: 8px 8px 0 0;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.md-typeset .tabbed-labels > label:hover {
+  color: var(--pk-primary);
+}
+
+/* ── TOC (Table of Contents) ─────────────────────────────────────── */
+.md-nav--secondary .md-nav__link--active {
+  color: var(--pk-primary) !important;
+  border-left: 2px solid var(--pk-primary);
+  padding-left: 0.5em;
+}
+
+/* ── Mermaid diagram polish ──────────────────────────────────────── */
+.mermaid {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+/* ── Stagger animation for list items ────────────────────────────── */
+.md-typeset table:not([class]) tbody tr {
+  animation: fadeInUp 0.35s ease-out both;
+}
+
+.md-typeset table:not([class]) tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.md-typeset table:not([class]) tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.md-typeset table:not([class]) tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.md-typeset table:not([class]) tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.md-typeset table:not([class]) tbody tr:nth-child(5) { animation-delay: 0.25s; }
+.md-typeset table:not([class]) tbody tr:nth-child(6) { animation-delay: 0.3s; }
+
+/* ── Reduce motion for a11y ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

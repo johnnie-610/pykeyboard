@@ -1,4 +1,4 @@
-site_name: PyKeyboard Documentation
+site_name: PyKeyboard
 site_description: Modern, Type-Safe Keyboard Library for Kurigram
 site_author: Johnnie
 site_url: https://pykeyboard.readthedocs.io/
@@ -12,6 +12,13 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   language: en
+  custom_dir: docs/overrides
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    logo: material/keyboard
+    repo: fontawesome/brands/github
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -19,15 +26,15 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: blue
-      accent: blue
+      primary: teal
+      accent: amber
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: blue
-      accent: blue
+      primary: teal
+      accent: amber
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
@@ -58,7 +65,6 @@ theme:
     - search.share
     - search.suggest
     - toc.follow
-    - toc.integrate
 
 # Plugins
 plugins:
@@ -82,6 +88,9 @@ extra:
       link: https://github.com/johnnie-610/pykeyboard
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/pykeyboard-kurigram/
+
+extra_css:
+  - stylesheets/extra.css
 
 # Extensions
 markdown_extensions:
@@ -142,18 +151,19 @@ nav:
   - User Guide:
       - Inline Keyboards: inline-keyboards.md
       - Reply Keyboards: reply-keyboards.md
-      - Pagination: pagination.md
-      - Language Selection: languages.md
-      - Advanced Features: advanced.md
+      - Error Handling: errors.md
   - API Reference:
       - InlineKeyboard: api/inline-keyboard.md
       - ReplyKeyboard: api/reply-keyboard.md
       - Buttons: api/buttons.md
-      - Builder: api/builder.md
+      - Builder & Factory: api/builder.md
+      - Hooks & Validation: api/hooks.md
+      - Errors: api/errors.md
       - Utilities: api/utilities.md
   - Examples:
       - Basic Bot: examples/basic-bot.md
       - Menu System: examples/menu-system.md
       - E-commerce Bot: examples/ecommerce.md
       - Multi-language Bot: examples/multilingual.md
+      - Showcase Bot: examples/showcase-bot.md
   - Contributing: contributing.md

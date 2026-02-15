@@ -1,91 +1,158 @@
-# PyKeyboard Documentation
+# <span class="hero-title">PyKeyboard</span>
 
-<div align="center">
+<div align="center" markdown>
 <p align="center">
-<img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/logo.png" alt="pykeyboard">
+<img src="https://raw.githubusercontent.com/johnnie-610/pykeyboard/main/docs/source/images/logo.png" alt="pykeyboard" width="200">
 </p>
 
-**Best Keyboard Library for Kurigram**
+**Modern, Type-Safe Keyboard Library for Kurigram**
+
+[:material-download: Install](installation.md){ .md-button .md-button--primary }
+[:material-rocket-launch: Quick Start](quickstart.md){ .md-button }
+[:fontawesome-brands-github: GitHub](https://github.com/johnnie-610/pykeyboard){ .md-button }
 
 </div>
 
-## 🚀 What is PyKeyboard?
+---
 
-PyKeyboard is a modern, fully type-safe Python library for creating beautiful and functional inline and reply keyboards for Telegram bots using [Kurigram](https://pypi.org/project/kurigram).
+## Features
 
-### ✨ Key Features
+<div class="grid cards" markdown>
 
+- :material-earth:{ .lg .middle } **50+ Languages**
 
-- 🌍 **50+ Languages** - Comprehensive locale support with native language names and flags
-- 📖 **Pagination** - Advanced pagination with automatic duplicate prevention
-- 🌐 **Language Selection** - Built-in multi-language keyboard support
+  ***
 
-## 📖 Quick Examples
+  Comprehensive locale support with native names and flag emojis
 
-### Inline Keyboard
-```python
-from pykeyboard import InlineKeyboard, InlineButton
+- :material-page-previous-outline:{ .lg .middle } **Smart Pagination**
 
-# Create a simple inline keyboard
-keyboard = InlineKeyboard()
-keyboard.add(
-    InlineButton("👍 Like", "action:like"),
-    InlineButton("👎 Dislike", "action:dislike"),
-    InlineButton("📊 Stats", "action:stats")
-)
+  ***
 
-# Use with Kurigram
-await message.reply_text("What do you think?", reply_markup=keyboard)
-```
+  Automatic page navigation with duplicate prevention and LRU caching
 
-### Reply Keyboard
-```python
-from pykeyboard import ReplyKeyboard, ReplyButton
+- :material-wrench:{ .lg .middle } **Builder & Factory**
 
-# Create a reply keyboard
-keyboard = ReplyKeyboard(resize_keyboard=True, one_time_keyboard=True)
-keyboard.add(
-    ReplyButton("Yes"),
-    ReplyButton("No"),
-    ReplyButton("Maybe")
-)
+  ***
 
-# Use with Kurigram
-await message.reply_text("Choose an option:", reply_markup=keyboard)
-```
+  Fluent `KeyboardBuilder` API and one-line `KeyboardFactory` presets
 
-## 🎯 Perfect For
+- :material-hook:{ .lg .middle } **Hooks & Validation**
 
-- **Telegram Bot Developers** - Create beautiful, functional keyboards with ease
-- **E-commerce Bots** - Product catalogs with pagination and search
-- **Menu-driven Interfaces** - Complex navigation systems
-- **Multi-language Applications** - Built-in language selection
-- **Form Handling** - User input collection with reply keyboards
-- **Interactive Applications** - Any bot requiring user interaction
+  ***
 
-## 🏗️ Architecture
+  Rule-based button validation and transforms via `ButtonValidator`
 
-PyKeyboard provides a clean, modular architecture:
+- :material-alert-circle-outline:{ .lg .middle } **Structured Errors**
 
-- **Core Classes**: `InlineKeyboard`, `ReplyKeyboard`, `InlineButton`, `ReplyButton`
-- **Builder Pattern**: `KeyboardBuilder` for fluent API construction
-- **Factory Pattern**: `KeyboardFactory` for common keyboard templates
-- **Localization**: 50+ language support with automatic detection
+  ***
 
+  Typed error classes with `error_code`, `param`, `value`, and `reason`
 
-## 🤝 Community & Support
+- :material-swap-horizontal:{ .lg .middle } **Full Pyrogram Compat**
 
-- 📖 **[GitHub Repository](https://github.com/johnnie-610/pykeyboard)** - Source code and issues
-- 💬 **[GitHub Discussions](https://github.com/johnnie-610/pykeyboard/discussions)** - Community support
-- 🐛 **[Issue Tracker](https://github.com/johnnie-610/pykeyboard/issues)** - Bug reports and feature requests
+  ***
 
+  Drop-in `reply_markup=` support with zero adapter code
 
-## 📄 License
-
-This project is licensed under the MIT License - see the <a href="https://github.com/johnnie-610/pykeyboard/blob/main/LICENSE">LICENSE</a> for details.
+</div>
 
 ---
 
-<div align="center">
-<strong><em>Made with ❤️ for the Telegram bot development community</em></strong>
+## Quick Examples
+
+=== "Inline Keyboard"
+
+    ```python
+    from pykeyboard import InlineKeyboard, InlineButton
+
+    keyboard = InlineKeyboard()
+    keyboard.add(
+        InlineButton("👍 Like", "action:like"),
+        InlineButton("👎 Dislike", "action:dislike"),
+        InlineButton("📊 Stats", "action:stats"),
+    )
+
+    await message.reply_text("What do you think?", reply_markup=keyboard)
+    ```
+
+=== "Reply Keyboard"
+
+    ```python
+    from pykeyboard import ReplyKeyboard, ReplyButton
+
+    keyboard = ReplyKeyboard(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.add(
+        ReplyButton("Yes"),
+        ReplyButton("No"),
+        ReplyButton("Maybe"),
+    )
+
+    await message.reply_text("Choose:", reply_markup=keyboard)
+    ```
+
+=== "Builder Pattern"
+
+    ```python
+    from pykeyboard import KeyboardBuilder, InlineKeyboard
+
+    kb = (
+        KeyboardBuilder(InlineKeyboard())
+        .add_row("✅ Yes", "❌ No")
+        .add_row("🤔 Maybe")
+        .build()
+    )
+    ```
+
+=== "Factory"
+
+    ```python
+    from pykeyboard import KeyboardFactory
+
+    kb = KeyboardFactory.create_confirmation_keyboard(
+        yes_text="✅ Confirm",
+        no_text="❌ Cancel",
+    )
+    ```
+
+---
+
+## Architecture
+
+```mermaid
+graph LR
+    A[Your Bot] --> B[InlineKeyboard / ReplyKeyboard]
+    A --> C[KeyboardBuilder]
+    A --> D[KeyboardFactory]
+    C --> B
+    D --> B
+    B --> E[Pyrogram]
+    F[ButtonValidator] -.-> C
+    G[KeyboardHookManager] -.-> C
+```
+
+| Layer       | Components                                                       |
+| ----------- | ---------------------------------------------------------------- |
+| **Core**    | `InlineKeyboard`, `ReplyKeyboard`, `InlineButton`, `ReplyButton` |
+| **Builder** | `KeyboardBuilder` — fluent API with chaining                     |
+| **Factory** | `KeyboardFactory` — one-line keyboard presets                    |
+| **Hooks**   | `ButtonValidator`, `KeyboardHookManager`                         |
+| **Errors**  | `PyKeyboardError` hierarchy with structured data                 |
+| **Locale**  | 50+ built-in locales + custom locale registration                |
+
+---
+
+## Community & Support
+
+- :fontawesome-brands-github: **[GitHub Repository](https://github.com/johnnie-610/pykeyboard)** — source code and issues
+- :material-forum: **[GitHub Discussions](https://github.com/johnnie-610/pykeyboard/discussions)** — community support
+- :material-bug: **[Issue Tracker](https://github.com/johnnie-610/pykeyboard/issues)** — bug reports and feature requests
+
+---
+
+<div align="center" markdown>
+**Made with :heart: for the Telegram bot development community**
+
+_MIT License — [View on GitHub](https://github.com/johnnie-610/pykeyboard)_
+
 </div>

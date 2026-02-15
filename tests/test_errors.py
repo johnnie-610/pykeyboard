@@ -1,195 +1,190 @@
-"""Tests for comprehensive error reporting system."""
-
-import json
-from unittest.mock import MagicMock, patch
+"""Tests for the pykeyboard error hierarchy."""
 
 import pytest
 
-from pykeyboard import (ConfigurationError, LocaleError, PaginationError,
-                        PaginationUnchangedError, PyKeyboardError,
-                        ValidationError)
+from pykeyboard import (
+    ConfigurationError,
+    LocaleError,
+    PaginationError,
+    PaginationUnchangedError,
+    PyKeyboardError,
+    ValidationError,
+)
 from pykeyboard.inline_keyboard import InlineKeyboard
+
+
+# ---------------------------------------------------------------------------
+# Base class
+# ---------------------------------------------------------------------------
 
 
 class TestPyKeyboardError:
     """Test cases for PyKeyboardError base class."""
 
-    def test_pykeyboard_error_creation(self):
-        """Test basic PyKeyboardError creation."""
-        error = PyKeyboardError("Test error", "TEST_ERROR")
+    def test_creation(self):
+        error = PyKeyboardError("something went wrong")
+        assert error.message == "something went wrong"
+        assert error.error_code == "PYKEYBOARD_ERROR"
+        assert str(error) == "[PYKEYBOARD_ERROR] something went wrong"
 
-        assert str(error) == "[TEST_ERROR] Test error"
-        assert error.error_code == "TEST_ERROR"
-        assert error.message == "Test error"
-
-    def test_pykeyboard_error_full_report(self):
-        """Test full error report generation."""
-        error = PyKeyboardError(
-            "Test error", "TEST_ERROR", context={"key": "value"}
-        )
-
-        report = error.get_full_report()
-        assert "Test error" in report
-        assert "TEST_ERROR" in report
-        assert "key: value" in report
+    def test_is_exception(self):
+        with pytest.raises(PyKeyboardError):
+            raise PyKeyboardError("boom")
 
 
-class TestSpecificErrors:
-    """Test cases for specific error types."""
+# ---------------------------------------------------------------------------
+# ValidationError
+# ---------------------------------------------------------------------------
 
-    def test_validation_error(self):
-        """Test ValidationError creation."""
-        error = ValidationError("field_name", "invalid_value", "str")
 
+class TestValidationError:
+    def test_with_expected(self):
+        error = ValidationError("field_name", "bad_val", expected="int")
         assert error.error_code == "VALIDATION_ERROR"
-        assert "field_name" in error.message
-        assert (
-            "value" in error.context
-        )  # ValidationError uses 'value' key in context
-        # suggestions attribute may not be available
+        assert error.field == "field_name"
+        assert error.value == "bad_val"
+        assert error.expected == "int"
+        assert "field_name" in str(error)
 
-    def test_pagination_error(self):
-        """Test PaginationError creation."""
+    def test_with_reason(self):
+        error = ValidationError("age", -1, reason="must be positive")
+        assert "must be positive" in str(error)
+        assert error.reason == "must be positive"
+
+    def test_minimal(self):
+        error = ValidationError("x")
+        assert error.field == "x"
+        assert error.value is None
+        assert error.expected is None
+
+    def test_inherits_from_base(self):
+        assert issubclass(ValidationError, PyKeyboardError)
+
+
+# ---------------------------------------------------------------------------
+# PaginationError
+# ---------------------------------------------------------------------------
+
+
+class TestPaginationError:
+    def test_creation(self):
         error = PaginationError("count_pages", 0, "must be >= 1")
-
         assert error.error_code == "PAGINATION_ERROR"
-        assert "count_pages" in error.message
+        assert error.param == "count_pages"
+        assert error.value == 0
+        assert error.reason == "must be >= 1"
+        assert "count_pages" in str(error)
 
-    def test_locale_error(self):
-        """Test LocaleError creation."""
-        error = LocaleError("invalid_locale", "not supported")
+    def test_inherits_from_base(self):
+        assert issubclass(PaginationError, PyKeyboardError)
 
-        assert error.error_code == "LOCALE_ERROR"
-        assert "invalid_locale" in error.message
-        # suggestions attribute may not be available
 
-    def test_configuration_error(self):
-        """Test ConfigurationError creation."""
-        error = ConfigurationError("setting", "invalid value", "invalid format")
+# ---------------------------------------------------------------------------
+# PaginationUnchangedError
+# ---------------------------------------------------------------------------
 
-        assert error.error_code == "CONFIG_ERROR"
-        assert "setting" in error.message
-        # suggestions attribute may not be available
 
-    def test_pagination_unchanged_error(self):
-        """Test PaginationUnchangedError creation."""
-        error = PaginationUnchangedError(
-            source="test_source", keyboard_hash="abc123", previous_hash="def456"
-        )
-
-        assert (
-            error.error_code == "PAGINATION_ERROR"
-        )  # Inherits from PaginationError
-        assert "test_source" in error.message
+class TestPaginationUnchangedError:
+    def test_creation(self):
+        error = PaginationUnchangedError(source="test_source")
         assert error.source == "test_source"
-        assert error.keyboard_hash == "abc123"
-        assert error.previous_hash == "def456"
+        assert "unchanged" in str(error)
+        # Inherits PAGINATION_ERROR code from PaginationError
+        assert error.error_code == "PAGINATION_ERROR"
 
-    def test_pagination_unchanged_error_hash_generation(self):
-        """Test hash generation for keyboard state."""
-        keyboard_data = {
-            "count_pages": 5,
-            "current_page": 3,
-            "callback_pattern": "page_{number}",
-            "source": "test",
-        }
+    def test_inherits_from_pagination(self):
+        assert issubclass(PaginationUnchangedError, PaginationError)
 
-        hash_value = PaginationUnchangedError.get_keyboard_hash(keyboard_data)
-        assert isinstance(hash_value, str)
-        assert len(hash_value) == 64  # SHA256 hex length
+    def test_catchable_as_pagination_error(self):
+        with pytest.raises(PaginationError):
+            raise PaginationUnchangedError("src")
 
-        # Same data should produce same hash
-        hash_value2 = PaginationUnchangedError.get_keyboard_hash(keyboard_data)
-        assert hash_value == hash_value2
 
-        # Different data should produce different hash
-        keyboard_data["current_page"] = 4
-        hash_value3 = PaginationUnchangedError.get_keyboard_hash(keyboard_data)
-        assert hash_value != hash_value3
+# ---------------------------------------------------------------------------
+# LocaleError
+# ---------------------------------------------------------------------------
+
+
+class TestLocaleError:
+    def test_creation(self):
+        error = LocaleError("callback_pattern", reason="must contain '{locale}'")
+        assert error.error_code == "LOCALE_ERROR"
+        assert error.param == "callback_pattern"
+        assert "callback_pattern" in str(error)
+
+    def test_inherits_from_base(self):
+        assert issubclass(LocaleError, PyKeyboardError)
+
+
+# ---------------------------------------------------------------------------
+# ConfigurationError
+# ---------------------------------------------------------------------------
+
+
+class TestConfigurationError:
+    def test_creation(self):
+        error = ConfigurationError("row_width", 0, "must be >= 1")
+        assert error.error_code == "CONFIG_ERROR"
+        assert error.setting == "row_width"
+        assert error.value == 0
+        assert error.reason == "must be >= 1"
+        assert "row_width" in str(error)
+
+    def test_inherits_from_base(self):
+        assert issubclass(ConfigurationError, PyKeyboardError)
+
+
+# ---------------------------------------------------------------------------
+# Integration with InlineKeyboard
+# ---------------------------------------------------------------------------
 
 
 class TestIntegrationWithInlineKeyboard:
-    """Integration tests with InlineKeyboard."""
-
-    def test_inline_keyboard_pagination_error_handling(self):
-        """Test pagination error handling in InlineKeyboard."""
-        keyboard = InlineKeyboard()
-
-        # Test invalid count_pages
+    def test_pagination_error_on_zero_pages(self):
+        kb = InlineKeyboard()
         with pytest.raises(PaginationError) as exc_info:
-            keyboard.paginate(0, 1, "page_{number}")
+            kb.paginate(0, 1, "page_{number}")
 
-        error = exc_info.value
-        assert error.error_code == "PAGINATION_ERROR"
-        assert "count_pages" in error.message
-        # suggestions attribute may not be available
+        err = exc_info.value
+        assert err.param == "count_pages"
+        assert err.value == 0
 
-    def test_inline_keyboard_locale_error_handling(self):
-        """Test locale error handling in InlineKeyboard."""
-        keyboard = InlineKeyboard()
-
-        # Test invalid callback pattern
+    def test_locale_error_bad_pattern(self):
+        kb = InlineKeyboard()
         with pytest.raises(LocaleError) as exc_info:
-            keyboard.languages("invalid_pattern", ["en_US"])
+            kb.languages("no_placeholder", ["en_US"])
 
-        error = exc_info.value
-        assert error.error_code == "LOCALE_ERROR"
-        assert "callback_pattern" in error.message
-        # suggestions attribute may not be available
+        assert exc_info.value.param == "callback_pattern"
 
-    def test_inline_keyboard_empty_locales_error(self):
-        """Test empty locales list error."""
-        keyboard = InlineKeyboard()
-
+    def test_locale_error_empty_list(self):
+        kb = InlineKeyboard()
         with pytest.raises(LocaleError) as exc_info:
-            keyboard.languages("lang_{locale}", [])
+            kb.languages("lang_{locale}", [])
 
-        error = exc_info.value
-        assert error.error_code == "LOCALE_ERROR"
-        assert "empty" in error.message
-
-    def test_direct_error_raising(self):
-        """Test that errors are raised directly without automatic reporting."""
-        keyboard = InlineKeyboard()
-
-        # Test that errors are raised directly
-        with pytest.raises(PaginationError):
-            keyboard.paginate(0, 1, "page_{number}")
-
-        with pytest.raises(LocaleError):
-            keyboard.languages("", ["en_US"])
+        assert "empty" in exc_info.value.message
 
 
-class TestErrorSerialization:
-    """Test cases for error serialization."""
+class TestErrorHierarchy:
+    """Verify the exception class hierarchy is correct."""
 
-    def test_error_to_dict(self):
-        """Test converting error to dictionary."""
-        error = PyKeyboardError(
-            "Test error", "TEST_ERROR", context={"key": "value"}
-        )
+    def test_all_are_pykeyboard_errors(self):
+        assert issubclass(ValidationError, PyKeyboardError)
+        assert issubclass(PaginationError, PyKeyboardError)
+        assert issubclass(PaginationUnchangedError, PyKeyboardError)
+        assert issubclass(LocaleError, PyKeyboardError)
+        assert issubclass(ConfigurationError, PyKeyboardError)
 
-        # Errors don't have to_dict method, but we can test the report
-        report = error.get_full_report()
-        assert isinstance(report, str)
-        assert "Test error" in report
+    def test_all_are_exceptions(self):
+        assert issubclass(PyKeyboardError, Exception)
 
-    def test_error_json_serialization(self):
-        """Test JSON serialization of error data."""
-        error = PyKeyboardError("Test error", "TEST_ERROR")
-
-        # Test that error context can be JSON serialized
-        import json
-
-        context_json = json.dumps(error.context)
-        assert context_json == "{}"
-
-        # Test error with context
-        error_with_context = PyKeyboardError(
-            "Test error", "TEST_ERROR", context={"number": 42, "text": "hello"}
-        )
-        context_json = json.dumps(error_with_context.context)
-        assert '"number"' in context_json  # JSON formatting may vary
-        assert '"text"' in context_json
-        assert "42" in context_json
-        assert "hello" in context_json
+    def test_catch_by_base_class(self):
+        """Every subclass should be catchable via ``except PyKeyboardError``."""
+        for cls, args in [
+            (ValidationError, ("f",)),
+            (PaginationError, ("p", 0, "r")),
+            (PaginationUnchangedError, ("s",)),
+            (LocaleError, ("p",)),
+            (ConfigurationError, ("s", "v", "r")),
+        ]:
+            with pytest.raises(PyKeyboardError):
+                raise cls(*args)

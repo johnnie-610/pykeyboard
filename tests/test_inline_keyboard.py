@@ -46,12 +46,12 @@ class TestInlineKeyboard:
         """Test pagination edge cases."""
         # Test with 0 pages (should raise error)
         keyboard = InlineKeyboard()
-        with pytest.raises(PaginationError, match="count_pages must be >= 1"):
+        with pytest.raises(PaginationError, match="must be >= 1"):
             keyboard.paginate(0, 1, "page_{number}")
 
         # Test with negative current_page (should raise error)
         keyboard = InlineKeyboard()
-        with pytest.raises(PaginationError, match="current_page must be >= 1"):
+        with pytest.raises(PaginationError, match="must be >= 1"):
             keyboard.paginate(5, -1, "page_{number}")
 
         # Test with current_page > count_pages (should raise error)
@@ -107,7 +107,7 @@ class TestInlineKeyboard:
 
         with pytest.raises(
             LocaleError,
-            match="callback_pattern must contain '\\{locale\\}' placeholder",
+            match="must contain '\\{locale\\}' placeholder",
         ):
             keyboard.languages("invalid_pattern", ["en_US"], 1)
 
@@ -117,7 +117,7 @@ class TestInlineKeyboard:
 
         with pytest.raises(
             LocaleError,
-            match="callback_pattern must contain '\\{locale\\}' placeholder",
+            match="must contain '\\{locale\\}' placeholder",
         ):
             keyboard.languages("", ["en_US"], 1)
 
@@ -263,7 +263,7 @@ class TestInlineKeyboard:
 
         with pytest.raises(
             PaginationError,
-            match="callback_pattern must contain '\\{number\\}' placeholder",
+            match="must contain '\\{number\\}' placeholder",
         ):
             keyboard.paginate(5, 1, "invalid_pattern")
 
@@ -273,7 +273,7 @@ class TestInlineKeyboard:
 
         with pytest.raises(
             PaginationError,
-            match="callback_pattern must contain '\\{number\\}' placeholder",
+            match="must contain '\\{number\\}' placeholder",
         ):
             keyboard.paginate(5, 1, "")
 
@@ -456,7 +456,6 @@ class TestInlineKeyboard:
 
         error = exc_info.value
         assert error.source == "default"
-        assert error.keyboard_hash == error.previous_hash
 
     def test_pagination_duplicate_prevention_explicit_source(self):
         """Test duplicate prevention with explicit source."""

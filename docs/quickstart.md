@@ -91,14 +91,14 @@ keyboard.languages(
 ### Builder Pattern
 
 ```python
-from pykeyboard import KeyboardBuilder
+from pykeyboard import KeyboardBuilder, InlineKeyboard
 
-builder = KeyboardBuilder(InlineKeyboard())
-keyboard = (builder
-    .add_button("Yes", "yes")
-    .add_button("No", "no")
-    .add_row("Maybe", "cancel")
-    .build())
+keyboard = (
+    KeyboardBuilder(InlineKeyboard())
+    .add_row("✅ Yes", "❌ No")
+    .add_row("🤔 Maybe", "⏪ Cancel")
+    .build()
+)
 ```
 
 ## Complete Example
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 ## Next Steps
 
-- Check out the [examples](../examples/basic-bot) for more advanced usage
-- Read the [API documentation](../api/inline-keyboard) for detailed reference
-- Explore [pagination](../inline-keyboards#pagination) and [language selection](../inline-keyboards#language-selection) features
+- Check out the [examples](examples/basic-bot.md) for more advanced usage
+- Read the [API documentation](api/inline-keyboard.md) for detailed reference
+- Explore [pagination](inline-keyboards.md#pagination) and [language selection](inline-keyboards.md#language-selection) features
 - Join our [GitHub Discussions](https://github.com/johnnie-610/pykeyboard/discussions) for community support

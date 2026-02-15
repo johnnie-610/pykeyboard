@@ -1,179 +1,120 @@
-# ReplyKeyboard API Reference
+# ReplyKeyboard
 
-## Class: ReplyKeyboard
+<span class="api-badge class">Class</span>
 
-Reply keyboard with comprehensive Pyrogram integration and customization options.
+Reply keyboard with full Pyrogram integration and customization options.
 
-### Constructor
+## Constructor
 
 ```python
 ReplyKeyboard(
     row_width: int = 3,
-    is_persistent: Optional[bool] = None,
-    resize_keyboard: Optional[bool] = None,
-    one_time_keyboard: Optional[bool] = None,
-    selective: Optional[bool] = None,
-    placeholder: Optional[str] = None
+    is_persistent: bool | None = None,
+    resize_keyboard: bool | None = None,
+    one_time_keyboard: bool | None = None,
+    selective: bool | None = None,
+    placeholder: str | None = None,
 )
 ```
 
-### Attributes
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `row_width` | `int` | `3` | Buttons per row |
+| `is_persistent` | `bool \| None` | `None` | Keep keyboard visible |
+| `resize_keyboard` | `bool \| None` | `None` | Resize to fit content |
+| `one_time_keyboard` | `bool \| None` | `None` | Hide after one use |
+| `selective` | `bool \| None` | `None` | Show only to specific users |
+| `placeholder` | `str \| None` | `None` | Input field placeholder text |
 
-- `row_width` (int): Number of buttons per row (default: 3)
-- `is_persistent` (Optional[bool]): Whether the keyboard is persistent
-- `resize_keyboard` (Optional[bool]): Whether to resize the keyboard
-- `one_time_keyboard` (Optional[bool]): Whether it's a one-time keyboard
-- `selective` (Optional[bool]): Whether the keyboard is selective
-- `placeholder` (Optional[str]): Placeholder text for the input field
-
-### Methods
-
-#### add(*args)
-
-Add buttons to keyboard in rows based on row_width.
-
-**Parameters:**
-- `*args`: Variable number of buttons or button-like objects to add
-
-#### row(*args)
-
-Add a new row of buttons to the keyboard.
-
-**Parameters:**
-- `*args`: Variable number of buttons to add as a single row
-
-#### to_dict()
-
-Convert keyboard to dictionary representation for serialization.
-
-**Returns:**
-- `dict`: Dictionary representation of the keyboard
-
-#### from_dict(data)
-
-Create keyboard instance from dictionary representation.
-
-**Parameters:**
-- `data` (dict): Dictionary representation of a keyboard
-
-**Returns:**
-- `ReplyKeyboard`: Reconstructed keyboard instance
-
-#### to_json()
-
-Convert keyboard to JSON string.
-
-**Returns:**
-- `str`: JSON representation of the keyboard
-
-#### from_json(json_str)
-
-Create keyboard instance from JSON string.
-
-**Parameters:**
-- `json_str` (str): JSON string representation of a keyboard
-
-**Returns:**
-- `ReplyKeyboard`: Reconstructed keyboard instance
-
-### Properties
-
-#### pyrogram_markup
-
-Get the Pyrogram ReplyKeyboardMarkup for this keyboard.
-
-**Returns:**
-- `ReplyKeyboardMarkup`: Pyrogram-compatible markup
+!!! warning "Raises"
+    **`ConfigurationError`** — if `row_width` < 1
 
 ---
 
-## Class: ReplyButton
+## Methods
 
-Reply keyboard button with comprehensive Pyrogram integration and advanced features.
+### add <span class="api-badge method">method</span>
 
-### Constructor
+Add buttons in rows based on `row_width`.
 
 ```python
-ReplyButton(
-    text: str,
-    request_contact: Optional[bool] = None,
-    request_location: Optional[bool] = None,
-    request_poll: Optional[KeyboardButtonPollType] = None,
-    request_users: Optional[KeyboardButtonRequestUsers] = None,
-    request_chat: Optional[KeyboardButtonRequestChat] = None,
-    web_app: Optional[WebAppInfo] = None
-)
+keyboard.add(*buttons)
 ```
 
-### Attributes
+??? example "Usage"
+    ```python
+    from pykeyboard import ReplyKeyboard, ReplyButton
 
-- `text` (str): Button display text
-- `request_contact` (Optional[bool]): Request contact information
-- `request_location` (Optional[bool]): Request location information
-- `request_poll` (Optional[KeyboardButtonPollType]): Request poll
-- `request_users` (Optional[KeyboardButtonRequestUsers]): Request users
-- `request_chat` (Optional[KeyboardButtonRequestChat]): Request chat
-- `web_app` (Optional[WebAppInfo]): Web app to open
-
-### Methods
-
-#### to_pyrogram()
-
-Convert to Pyrogram KeyboardButton.
-
-**Returns:**
-- `KeyboardButton`: Pyrogram-compatible button instance
+    kb = ReplyKeyboard(row_width=2, resize_keyboard=True)
+    kb.add(
+        ReplyButton("📞 Share Contact", request_contact=True),
+        ReplyButton("📍 Share Location", request_location=True),
+    )
+    ```
 
 ---
 
-## Class: PyReplyKeyboardRemove
+### row <span class="api-badge method">method</span>
 
-Remove reply keyboard markup with selective option.
-
-### Constructor
+Add a single explicit row of buttons (ignores `row_width`).
 
 ```python
-PyReplyKeyboardRemove(selective: Optional[bool] = None)
+keyboard.row(*buttons)
 ```
-
-### Attributes
-
-- `selective` (Optional[bool]): Whether the removal should be selective
-
-### Methods
-
-#### to_pyrogram()
-
-Convert to Pyrogram ReplyKeyboardRemove.
-
-**Returns:**
-- `ReplyKeyboardRemove`: Pyrogram-compatible remove markup
 
 ---
 
-## Class: PyForceReply
+## Properties
 
-Force user to send a reply with selective and placeholder options.
+### pyrogram_markup <span class="api-badge prop">property</span>
 
-### Constructor
+Get the Pyrogram `ReplyKeyboardMarkup` for use with `reply_markup=`.
+
+**Returns:** `ReplyKeyboardMarkup`
+
+---
+
+## Related Classes
+
+### PyReplyKeyboardRemove <span class="api-badge class">Class</span>
+
+Remove reply keyboard markup.
+
+```python
+PyReplyKeyboardRemove(selective: bool | None = None)
+```
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `to_pyrogram()` | `ReplyKeyboardRemove` | Pyrogram-compatible markup |
+
+??? example "Usage"
+    ```python
+    from pykeyboard import PyReplyKeyboardRemove
+
+    await message.reply("Keyboard removed", reply_markup=PyReplyKeyboardRemove())
+    ```
+
+---
+
+### PyForceReply <span class="api-badge class">Class</span>
+
+Force the user to send a reply.
 
 ```python
 PyForceReply(
-    selective: Optional[bool] = None,
-    placeholder: Optional[str] = None
+    selective: bool | None = None,
+    placeholder: str | None = None,
 )
 ```
 
-### Attributes
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `to_pyrogram()` | `ForceReply` | Pyrogram-compatible markup |
 
-- `selective` (Optional[bool]): Whether the force reply should be selective
-- `placeholder` (Optional[str]): Placeholder text shown in the input field
+??? example "Usage"
+    ```python
+    from pykeyboard import PyForceReply
 
-### Methods
-
-#### to_pyrogram()
-
-Convert to Pyrogram ForceReply.
-
-**Returns:**
-- `ForceReply`: Pyrogram-compatible force reply markup
+    await message.reply("Your name?", reply_markup=PyForceReply(placeholder="Type here..."))
+    ```

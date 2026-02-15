@@ -1,236 +1,243 @@
-# Builder API Reference
+# Builder & Factory
 
-## Class: KeyboardBuilder
+## KeyboardBuilder <span class="api-badge class">Class</span>
 
-Fluent API builder for type-safe keyboard construction.
+Fluent API for constructing keyboards with method chaining.
 
 ### Constructor
 
 ```python
-KeyboardBuilder(keyboard: Union[InlineKeyboard, ReplyKeyboard])
+KeyboardBuilder(keyboard: InlineKeyboard | ReplyKeyboard)
 ```
 
-### Methods
+---
 
-#### add_validation_hook(hook)
+### add_button <span class="api-badge method">method</span>
 
-Add a validation hook that runs before adding buttons.
+Add a single button.
 
-**Parameters:**
-- `hook` (Callable[[Any], bool]): Function that takes a button and returns True if valid
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `text` | `str` | — | Button text |
+| `callback_data` | `str \| None` | `None` | Callback data (inline only) |
+| `**kwargs` | | | Additional button parameters |
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+**Returns:** `KeyboardBuilder` (chainable)
 
-#### add_button_transform(transform)
+---
 
-Add a button transformation function.
-
-**Parameters:**
-- `transform` (Callable[[Any], Any]): Function that takes a button and returns transformed button
-
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
-
-#### add_button(text, callback_data=None, **kwargs)
-
-Add a single button to the keyboard.
-
-**Parameters:**
-- `text` (str): Button text
-- `callback_data` (Optional[str]): Callback data (for inline keyboards)
-- `**kwargs`: Additional button parameters
-
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
-
-#### add_buttons(*buttons)
+### add_buttons <span class="api-badge method">method</span>
 
 Add multiple buttons at once.
 
-**Parameters:**
-- `*buttons` (Union[str, Dict[str, Any], Any]): Button specifications (strings, dicts, or button objects)
+```python
+builder.add_buttons(*buttons)
+```
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+Accepts strings, dicts with button params, or button objects.
 
-#### add_row(*buttons)
+**Returns:** `KeyboardBuilder` (chainable)
+
+---
+
+### add_row <span class="api-badge method">method</span>
 
 Add a complete row of buttons.
 
-**Parameters:**
-- `*buttons` (Union[str, Dict[str, Any], Any]): Button specifications for the row
+```python
+builder.add_row(*buttons)
+```
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+**Returns:** `KeyboardBuilder` (chainable)
 
-#### add_conditional_button(condition, text, callback_data=None, **kwargs)
+??? example "Fluent Example"
+    ```python
+    from pykeyboard import KeyboardBuilder, InlineKeyboard
 
-Add a button only if condition is True.
+    kb = (
+        KeyboardBuilder(InlineKeyboard())
+        .add_row("✅ Yes", "❌ No")
+        .add_row("🤔 Maybe", "⏪ Cancel")
+        .build()
+    )
+    ```
 
-**Parameters:**
-- `condition` (bool): Whether to add the button
-- `text` (str): Button text
-- `callback_data` (Optional[str]): Callback data
-- `**kwargs`: Additional button parameters
+---
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+### add_conditional_button <span class="api-badge method">method</span>
 
-#### add_paginated_buttons(items, callback_pattern, items_per_page=5, current_page=1)
+Add a button only if a condition is `True`.
 
-Add paginated buttons from a list of items.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `condition` | `bool` | Whether to add the button |
+| `text` | `str` | Button text |
+| `callback_data` | `str \| None` | Callback data |
 
-**Parameters:**
-- `items` (List[str]): List of item texts
-- `callback_pattern` (str): Pattern for callback data with {item} and {page} placeholders
-- `items_per_page` (int): Number of items per page
-- `current_page` (int): Current page number
+**Returns:** `KeyboardBuilder` (chainable)
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+??? example "Usage"
+    ```python
+    is_admin = user.is_admin
+    kb = (
+        KeyboardBuilder(InlineKeyboard())
+        .add_row("📊 Dashboard")
+        .add_conditional_button(is_admin, "🔧 Admin Panel", "admin")
+        .build()
+    )
+    ```
 
-#### add_navigation_buttons(total_pages, current_page, callback_pattern="page_{number}")
+---
 
-Add navigation buttons for pagination.
+### add_navigation_buttons <span class="api-badge method">method</span>
 
-**Parameters:**
-- `total_pages` (int): Total number of pages
-- `current_page` (int): Current page number
-- `callback_pattern` (str): Pattern for callback data
+Add pagination navigation buttons.
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `total_pages` | `int` | — | Total pages |
+| `current_page` | `int` | — | Current page |
+| `callback_pattern` | `str` | `"page_{number}"` | Callback pattern |
 
-#### add_language_buttons(locales, callback_pattern="lang_{locale}", row_width=2)
+**Returns:** `KeyboardBuilder` (chainable)
+
+---
+
+### add_language_buttons <span class="api-badge method">method</span>
 
 Add language selection buttons.
 
-**Parameters:**
-- `locales` (List[str]): List of locale codes
-- `callback_pattern` (str): Pattern for callback data
-- `row_width` (int): Number of buttons per row
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `locales` | `list[str]` | — | Locale codes |
+| `callback_pattern` | `str` | `"lang_{locale}"` | Callback pattern |
+| `row_width` | `int` | `2` | Buttons per row |
 
-**Returns:**
-- `KeyboardBuilder`: Self for method chaining
+**Returns:** `KeyboardBuilder` (chainable)
 
-#### build()
+---
+
+### add_validation_hook <span class="api-badge method">method</span>
+
+Add a validation hook that runs before adding buttons.
+
+**Returns:** `KeyboardBuilder` (chainable)
+
+---
+
+### add_button_transform <span class="api-badge method">method</span>
+
+Add a button transformation function.
+
+**Returns:** `KeyboardBuilder` (chainable)
+
+---
+
+### build <span class="api-badge method">method</span>
 
 Build and return the final keyboard.
 
-**Returns:**
-- `Union[InlineKeyboard, ReplyKeyboard]`: The constructed keyboard
+**Returns:** `InlineKeyboard | ReplyKeyboard`
 
 ---
 
-## Class: KeyboardFactory
+## KeyboardFactory <span class="api-badge class">Class</span>
 
-Factory class for creating keyboards with predefined configurations.
+One-line factory methods for common keyboard patterns.
 
-### Methods
+### create_confirmation_keyboard <span class="api-badge static">static</span>
 
-#### create_confirmation_keyboard(yes_text="✅ Yes", no_text="❌ No", cancel_text=None, callback_pattern="confirm_{action}", columns=2)
+```python
+KeyboardFactory.create_confirmation_keyboard(
+    yes_text: str = "✅ Yes",
+    no_text: str = "❌ No",
+    cancel_text: str | None = None,
+    callback_pattern: str = "confirm_{action}",
+    columns: int = 2,
+) -> InlineKeyboard
+```
 
-Create a confirmation dialog keyboard.
-
-**Parameters:**
-- `yes_text` (str): Text for yes button
-- `no_text` (str): Text for no button
-- `cancel_text` (Optional[str]): Text for cancel button (optional)
-- `callback_pattern` (str): Pattern for callback data
-- `columns` (int): Row width of the keyboard
-
-**Returns:**
-- `InlineKeyboard`: Configured InlineKeyboard
-
-#### create_menu_keyboard(menu_items, callback_pattern="menu_{action}", columns=2)
-
-Create a menu keyboard from a dictionary of items.
-
-**Parameters:**
-- `menu_items` (Dict[str, str]): Dict mapping button text to action
-- `callback_pattern` (str): Pattern for callback data
-- `columns` (int): Number of columns
-
-**Returns:**
-- `InlineKeyboard`: Configured InlineKeyboard
-
-#### create_rating_keyboard(max_rating=5, callback_pattern="rate_{stars}", include_labels=True)
-
-Create a star rating keyboard.
-
-**Parameters:**
-- `max_rating` (int): Maximum rating value
-- `callback_pattern` (str): Pattern for callback data
-- `include_labels` (bool): Whether to include rating labels
-
-**Returns:**
-- `InlineKeyboard`: Configured InlineKeyboard
-
-#### create_pagination_keyboard(total_pages, current_page, callback_pattern="page_{number}", include_buttons=None)
-
-Create a pagination keyboard with optional additional buttons.
-
-**Parameters:**
-- `total_pages` (int): Total number of pages
-- `current_page` (int): Current page number
-- `callback_pattern` (str): Pattern for pagination callbacks
-- `include_buttons` (Optional[List[Dict[str, str]]]): Additional buttons to include
-
-**Returns:**
-- `InlineKeyboard`: Configured InlineKeyboard
-
-#### create_language_keyboard(locales, callback_pattern="lang_{locale}", row_width=2)
-
-Create a language selection keyboard.
-
-**Parameters:**
-- `locales` (List[str]): List of locale codes
-- `callback_pattern` (str): Pattern for callback data
-- `row_width` (int): Number of buttons per row
-
-**Returns:**
-- `InlineKeyboard`: Configured InlineKeyboard
-
-#### clone_keyboard(source_keyboard, deep_copy=True)
-
-Clone an existing keyboard.
-
-**Parameters:**
-- `source_keyboard` (Union[InlineKeyboard, ReplyKeyboard]): Keyboard to clone
-- `deep_copy` (bool): Whether to perform deep copy
-
-**Returns:**
-- `Union[InlineKeyboard, ReplyKeyboard]`: Cloned keyboard instance
+??? example "Usage"
+    ```python
+    kb = KeyboardFactory.create_confirmation_keyboard(
+        yes_text="✅ Confirm Order",
+        no_text="❌ Cancel",
+        callback_pattern="order_{action}",
+    )
+    ```
 
 ---
 
-## Functions
+### create_menu_keyboard <span class="api-badge static">static</span>
 
-### build_inline_keyboard()
+```python
+KeyboardFactory.create_menu_keyboard(
+    menu_items: dict[str, str],
+    callback_pattern: str = "menu_{action}",
+    columns: int = 2,
+) -> InlineKeyboard
+```
 
-Create a builder for inline keyboards.
-
-**Returns:**
-- `KeyboardBuilder`: Builder instance for InlineKeyboard
-
-### build_reply_keyboard()
-
-Create a builder for reply keyboards.
-
-**Returns:**
-- `KeyboardBuilder`: Builder instance for ReplyKeyboard
+??? example "Usage"
+    ```python
+    kb = KeyboardFactory.create_menu_keyboard({
+        "🏠 Home": "home",
+        "⚙️ Settings": "settings",
+        "ℹ️ Help": "help",
+    })
+    ```
 
 ---
 
-## Decorators
+### create_rating_keyboard <span class="api-badge static">static</span>
 
-### keyboard_factory(func)
+```python
+KeyboardFactory.create_rating_keyboard(
+    max_rating: int = 5,
+    callback_pattern: str = "rate_{stars}",
+    include_labels: bool = True,
+) -> InlineKeyboard
+```
 
-Decorator to mark functions as keyboard factories.
+---
 
-**Parameters:**
-- `func` (Callable): Function to decorate
+### create_pagination_keyboard <span class="api-badge static">static</span>
 
-**Returns:**
-- `Callable`: Decorated function with additional validation and error handling
+```python
+KeyboardFactory.create_pagination_keyboard(
+    total_pages: int,
+    current_page: int,
+    callback_pattern: str = "page_{number}",
+    include_buttons: list[dict[str, str]] | None = None,
+) -> InlineKeyboard
+```
+
+---
+
+### create_language_keyboard <span class="api-badge static">static</span>
+
+```python
+KeyboardFactory.create_language_keyboard(
+    locales: list[str],
+    callback_pattern: str = "lang_{locale}",
+    row_width: int = 2,
+) -> InlineKeyboard
+```
+
+---
+
+### clone_keyboard <span class="api-badge static">static</span>
+
+Clone an existing keyboard (deep or shallow copy).
+
+```python
+KeyboardFactory.clone_keyboard(
+    source_keyboard: InlineKeyboard | ReplyKeyboard,
+    deep_copy: bool = True,
+) -> InlineKeyboard | ReplyKeyboard
+```
+
+---
+
+!!! note "Removed APIs"
+    The `keyboard_factory` decorator and standalone `build_inline_keyboard()` / `build_reply_keyboard()` functions have been removed. Use `KeyboardBuilder(InlineKeyboard())` and `KeyboardBuilder(ReplyKeyboard())` directly.

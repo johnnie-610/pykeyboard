@@ -46,7 +46,6 @@ PyKeyboard has minimal dependencies:
 
 Optional dependencies:
 
-- `pyyaml` - YAML export/import support
 - `TgCrypto` - Faster Pyrogram performance (recommended)
 
 ## Verification

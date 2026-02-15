@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Johnnie
+# Copyright (c) 2025-2026 Johnnie
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -8,30 +8,15 @@
 # pykeyboard/hooks.py
 
 import logging
-from typing import Any, Callable, Dict, List, Optional, Protocol, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from .inline_keyboard import InlineKeyboard
 from .keyboard_base import KeyboardBase
 from .reply_keyboard import ReplyKeyboard
 
-logger = logging.getLogger("pykeyboard.hooks")
+logger = logging.getLogger(__name__)
 
-class ValidationHook(Protocol):
-    """Protocol for validation hook functions."""
 
-    def __call__(
-        self, button: Any, context: Optional[Dict[str, Any]] = None
-    ) -> bool:
-        """Validate a button.
-
-        Args:
-            button: The button to validate
-            context: Optional context information
-
-        Returns:
-            True if valid, False otherwise
-        """
-        ...
 
 
 class ButtonValidator:
@@ -117,7 +102,7 @@ class ButtonValidator:
         error_message: str = "",
         suggestion: str = "",
     ) -> "ButtonValidator":
-        """Add a custom validation rule.
+        r"""Add a custom validation rule.
 
         Args:
             name: Unique name for the rule
@@ -247,19 +232,17 @@ class ButtonValidator:
             >>> result = validator.validate_keyboard(my_keyboard)
             >>> print(f"Valid buttons: {result['valid_buttons']}/{result['total_buttons']}")
         """
-        context = context or {}
-        context.update(
-            {
-                "keyboard_type": type(keyboard).__name__,
-                "total_rows": len(keyboard.keyboard),
-                "total_buttons": sum(len(row) for row in keyboard.keyboard),
-            }
-        )
+        ctx = {
+            **(context or {}),
+            "keyboard_type": type(keyboard).__name__,
+            "total_rows": len(keyboard.keyboard),
+            "total_buttons": sum(len(row) for row in keyboard.keyboard),
+        }
 
         context_errors = []
-        for validator in self._context_validators:
+        for ctx_validator in self._context_validators:
             try:
-                if not validator(context):
+                if not ctx_validator(ctx):
                     context_errors.append("Context validation failed")
             except Exception as e:
                 context_errors.append(f"Context validator error: {e}")
@@ -272,7 +255,7 @@ class ButtonValidator:
             for btn_idx, button in enumerate(row):
                 total_buttons += 1
                 result = self.validate_button(
-                    button, {**context, "row": row_idx, "col": btn_idx}
+                    button, {**ctx, "row": row_idx, "col": btn_idx}
                 )
                 button_results.append(
                     {
@@ -408,8 +391,8 @@ class KeyboardHookManager:
                 for error_hook in self._error_hooks:
                     try:
                         error_hook(e, None)
-                    except:
-                        pass  # Don't let error hooks break processing
+                    except Exception:
+                        logger.warning("Error hook failed while handling button hook error", exc_info=True)
         return button
 
     def execute_pre_hooks(self, keyboard: KeyboardBase) -> None:
@@ -425,8 +408,8 @@ class KeyboardHookManager:
                 for error_hook in self._error_hooks:
                     try:
                         error_hook(e, keyboard)
-                    except:
-                        pass
+                    except Exception:
+                        logger.warning("Error hook failed while handling pre-hook error", exc_info=True)
 
     def execute_post_hooks(self, keyboard: KeyboardBase) -> None:
         """Execute all post-construction hooks.
@@ -441,8 +424,8 @@ class KeyboardHookManager:
                 for error_hook in self._error_hooks:
                     try:
                         error_hook(e, keyboard)
-                    except:
-                        pass
+                    except Exception:
+                        logger.warning("Error hook failed while handling post-hook error", exc_info=True)
 
 
 default_validator = ButtonValidator()

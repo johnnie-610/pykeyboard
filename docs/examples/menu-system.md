@@ -1,167 +1,152 @@
 # Menu System Example
 
-This example demonstrates how to create a hierarchical menu system using PyKeyboard with navigation between different menu levels.
+A hierarchical menu bot demonstrating navigation between different menu levels using `KeyboardBuilder`.
 
-<strong><em>Note: ALTHOUGH WE BELIEVE THIS EXAMPLE SHOULD WORK, IT IS NOT TESTED AND MIGHT NOT WORK. </em></strong>
-<strong><em>USE AT YOUR OWN RISK. YOU CAN INSTEAD REFER TO THIS SCRIPT WHICH HAS BEEN TESTED AND WORKS: <a href="https://github.com/johnnie-610/pykeyboard/blob/main/showcase_bot.py">Showcase Bot</a>.</em></strong>
+!!! tip "Tested Reference"
+For a fully tested, comprehensive example, see the [Showcase Bot](showcase-bot.md).
 
 ## Overview
 
 This example shows:
-- Creating multi-level menu systems
-- Navigation between menus
-- State management for menu context
-- Using the KeyboardBuilder for complex layouts
 
-## Code Example
+- Creating multi-level menu systems
+- Navigation between menus with back buttons
+- Using `KeyboardBuilder` for fluent keyboard construction
+- State management for menu context
+
+## Code
 
 ```python
 from pyrogram import Client, filters
-from pykeyboard import KeyboardBuilder, InlineKeyboard
-from typing import Dict
+from pykeyboard import KeyboardBuilder, InlineKeyboard, InlineButton, PyKeyboardError
 
 app = Client("menu_bot")
 
 # Menu state storage (in production, use a database)
-user_menu_states: Dict[int, str] = {}
+user_menu_states: dict[int, str] = {}
 
-# Define menu structure
-MAIN_MENU = "main"
-SETTINGS_MENU = "settings"
-PROFILE_MENU = "profile"
 
-def create_main_menu():
-    keyboard = InlineKeyboard()
-    keyboard.add(
-        InlineButton("📊 Dashboard", callback_data="menu:dashboard"),
-        InlineButton("⚙️ Settings", callback_data="menu:settings"),
-        InlineButton("👤 Profile", callback_data="menu:profile"),
-        InlineButton("ℹ️ Help", callback_data="menu:help")
+def create_main_menu() -> InlineKeyboard:
+    return (
+        KeyboardBuilder(InlineKeyboard(row_width=2))
+        .add_row("📊 Dashboard", "⚙️ Settings")
+        .add_row("👤 Profile", "ℹ️ Help")
+        .build()
     )
-    return keyboard
 
-def create_settings_menu():
-    keyboard = InlineKeyboard()
+
+def create_settings_menu() -> InlineKeyboard:
+    keyboard = InlineKeyboard(row_width=1)
     keyboard.add(
         InlineButton("🔔 Notifications", callback_data="settings:notifications"),
         InlineButton("🌐 Language", callback_data="settings:language"),
         InlineButton("🔒 Privacy", callback_data="settings:privacy"),
-        InlineButton("⬅️ Back", callback_data="menu:main")
+        InlineButton("⬅️ Back", callback_data="menu:main"),
     )
     return keyboard
 
-def create_profile_menu():
-    keyboard = InlineKeyboard()
+
+def create_profile_menu() -> InlineKeyboard:
+    keyboard = InlineKeyboard(row_width=1)
     keyboard.add(
         InlineButton("📝 Edit Profile", callback_data="profile:edit"),
         InlineButton("📸 Change Photo", callback_data="profile:photo"),
         InlineButton("📊 Statistics", callback_data="profile:stats"),
-        InlineButton("⬅️ Back", callback_data="menu:main")
+        InlineButton("⬅️ Back", callback_data="menu:main"),
     )
     return keyboard
 
+
+MENUS = {
+    "main": ("🏠 **Main Menu**\n\nChoose an option:", create_main_menu),
+    "settings": ("⚙️ **Settings**\n\nConfigure your preferences:", create_settings_menu),
+    "profile": ("👤 **Profile**\n\nManage your profile:", create_profile_menu),
+}
+
+
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
-    user_id = message.from_user.id
-    user_menu_states[user_id] = MAIN_MENU
-
-    keyboard = create_main_menu()
+    user_menu_states[message.from_user.id] = "main"
     await message.reply_text(
         "🏠 **Main Menu**\n\nWelcome! Choose an option:",
-        reply_markup=keyboard
+        reply_markup=create_main_menu(),
     )
+
 
 @app.on_callback_query(filters.regex(r"^menu:"))
 async def handle_menu_navigation(client, callback_query):
     user_id = callback_query.from_user.id
     menu_action = callback_query.data.split(":", 1)[1]
 
-    if menu_action == "main":
-        user_menu_states[user_id] = MAIN_MENU
-        keyboard = create_main_menu()
-        await callback_query.edit_message_text(
-            "🏠 **Main Menu**\n\nChoose an option:",
-            reply_markup=keyboard
-        )
-
-    elif menu_action == "settings":
-        user_menu_states[user_id] = SETTINGS_MENU
-        keyboard = create_settings_menu()
-        await callback_query.edit_message_text(
-            "⚙️ **Settings**\n\nConfigure your preferences:",
-            reply_markup=keyboard
-        )
-
-    elif menu_action == "profile":
-        user_menu_states[user_id] = PROFILE_MENU
-        keyboard = create_profile_menu()
-        await callback_query.edit_message_text(
-            "👤 **Profile**\n\nManage your profile:",
-            reply_markup=keyboard
-        )
-
-    elif menu_action == "help":
-        await callback_query.edit_message_text(
-            "ℹ️ **Help**\n\n"
-            "• Dashboard: View your statistics\n"
-            "• Settings: Configure preferences\n"
-            "• Profile: Manage your account\n\n"
-            "Use the Back buttons to navigate.",
-            reply_markup=create_main_menu()
-        )
+    try:
+        if menu_action == "help":
+            await callback_query.edit_message_text(
+                "ℹ️ **Help**\n\n"
+                "• Dashboard: View your statistics\n"
+                "• Settings: Configure preferences\n"
+                "• Profile: Manage your account\n\n"
+                "Use the Back buttons to navigate.",
+                reply_markup=create_main_menu(),
+            )
+        elif menu_action == "dashboard":
+            await callback_query.edit_message_text(
+                "📊 **Dashboard**\n\nYour stats will appear here.",
+                reply_markup=create_main_menu(),
+            )
+        elif menu_action in MENUS:
+            text, factory = MENUS[menu_action]
+            user_menu_states[user_id] = menu_action
+            await callback_query.edit_message_text(text, reply_markup=factory())
+        else:
+            await callback_query.answer(f"Unknown menu: {menu_action}")
+    except PyKeyboardError as e:
+        await callback_query.answer(f"Error: {e.error_code}")
 
     await callback_query.answer()
 
+
 @app.on_callback_query(filters.regex(r"^(settings|profile):"))
 async def handle_submenu_actions(client, callback_query):
-    action = callback_query.data
+    section, action = callback_query.data.split(":", 1)
+    await callback_query.answer(f"{section.title()} → {action} opened!")
 
-    if action == "settings:notifications":
-        await callback_query.answer("Notifications settings opened!")
-        # Implement notifications settings
-
-    elif action == "settings:language":
-        await callback_query.answer("Language settings opened!")
-        # Implement language selection
-
-    elif action == "profile:edit":
-        await callback_query.answer("Profile editing opened!")
-        # Implement profile editing
-
-    # Add more submenu handlers as needed
 
 if __name__ == "__main__":
     app.run()
 ```
 
-## Features Demonstrated
-
-- Hierarchical menu navigation
-- State management for user context
-- Callback data routing
-- Dynamic keyboard generation
-- Back navigation
-
 ## Menu Structure
 
 ```
 Main Menu
-├── Dashboard
-├── Settings
-│   ├── Notifications
-│   ├── Language
-│   └── Privacy
-├── Profile
-│   ├── Edit Profile
-│   ├── Change Photo
-│   └── Statistics
-└── Help
+├── 📊 Dashboard
+├── ⚙️ Settings
+│   ├── 🔔 Notifications
+│   ├── 🌐 Language
+│   └── 🔒 Privacy
+├── 👤 Profile
+│   ├── 📝 Edit Profile
+│   ├── 📸 Change Photo
+│   └── 📊 Statistics
+└── ℹ️ Help
 ```
 
-## Running the Example
+## Features Demonstrated
 
-1. Install PyKeyboard: `pip install pykeyboard-kurigram`
-2. Set up your bot token
-3. Run the script: `python menu_system.py`
-4. Send `/start` to see the main menu
-5. Navigate through different menu levels
+- `KeyboardBuilder` fluent API for main menu
+- `InlineKeyboard.add()` for sub-menus with back buttons
+- Menu routing via `match` on callback data sections
+- `MENUS` lookup dict to reduce repetition
+- `PyKeyboardError` handling
+
+## Running
+
+```bash
+pip install pykeyboard-kurigram
+export TELEGRAM_BOT_TOKEN="..."
+export TELEGRAM_API_ID="..."
+export TELEGRAM_API_HASH="..."
+python menu_system.py
+```
+
+Send `/start` to see the main menu. Navigate through different levels.

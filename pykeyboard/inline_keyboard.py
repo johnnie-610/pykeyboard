@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Johnnie
+# Copyright (c) 2025-2026 Johnnie
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -8,6 +8,7 @@
 # pykeyboard/inline_keyboard.py
 
 import contextvars
+import hashlib
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 
@@ -15,8 +16,7 @@ import logging
 from pydantic import Field, PrivateAttr, model_validator
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .errors import (LocaleError, PaginationError, PaginationUnchangedError,
-                     capture_traceback_info)
+from .errors import (LocaleError, PaginationError, PaginationUnchangedError)
 from .keyboard_base import InlineButton, KeyboardBase
 
 # Context variable for client isolation in async environments
@@ -63,7 +63,7 @@ class InlineKeyboard(KeyboardBase):
         default=0, ge=0, description="Current page number"
     )
 
-    pyrogram_markup: Optional[InlineKeyboardMarkup] = PrivateAttr(default=None)
+    _pyrogram_markup: Optional[InlineKeyboardMarkup] = PrivateAttr(default=None)
 
     custom_locales: Dict[str, str] = Field(
         default_factory=dict, description="User-defined custom locales"
@@ -160,15 +160,20 @@ class InlineKeyboard(KeyboardBase):
     @model_validator(mode="after")
     def initialize_pyrogram_markup(self) -> "InlineKeyboard":
         """Initialize the Pyrogram InlineKeyboardMarkup after model creation."""
-        self.pyrogram_markup = InlineKeyboardMarkup(
+        self._pyrogram_markup = InlineKeyboardMarkup(
             inline_keyboard=self.keyboard
         )
         return self
 
+    @property
+    def pyrogram_markup(self) -> InlineKeyboardMarkup:
+        """Get the Pyrogram InlineKeyboardMarkup for this keyboard."""
+        return self._pyrogram_markup
+
     def _update_keyboard(self) -> None:
         """Update the underlying Pyrogram InlineKeyboardMarkup."""
         super()._update_keyboard()
-        if self.pyrogram_markup:
+        if self._pyrogram_markup:
             pyrogram_keyboard = []
             for row in self.keyboard:
                 pyrogram_row = []
@@ -178,7 +183,7 @@ class InlineKeyboard(KeyboardBase):
                     else:
                         pyrogram_row.append(button)
                 pyrogram_keyboard.append(pyrogram_row)
-            self.pyrogram_markup.inline_keyboard = pyrogram_keyboard
+            self._pyrogram_markup.inline_keyboard = pyrogram_keyboard
 
     @staticmethod
     @lru_cache(maxsize=512)
@@ -231,42 +236,31 @@ class InlineKeyboard(KeyboardBase):
         """
         if count_pages < 1:
             raise PaginationError(
-                "count_pages",
-                count_pages,
-                "count_pages must be >= 1",
-                traceback_info=capture_traceback_info(skip_frames=1),
+                "count_pages", count_pages, "must be >= 1"
             )
 
         if current_page < 1:
             raise PaginationError(
-                "current_page",
-                current_page,
-                "current_page must be >= 1",
-                traceback_info=capture_traceback_info(skip_frames=1),
+                "current_page", current_page, "must be >= 1"
             )
 
         if not callback_pattern or "{number}" not in callback_pattern:
             raise PaginationError(
                 "callback_pattern",
                 callback_pattern,
-                "callback_pattern must contain '{number}' placeholder",
-                traceback_info=capture_traceback_info(skip_frames=1),
+                "must contain '{number}' placeholder",
             )
 
         if current_page > count_pages:
             raise PaginationError(
                 "current_page",
                 current_page,
-                f"current_page ({current_page}) cannot exceed count_pages ({count_pages})",
-                traceback_info=capture_traceback_info(skip_frames=1),
+                f"cannot exceed count_pages ({count_pages})",
             )
 
         if count_pages > 10000:
             raise PaginationError(
-                "count_pages",
-                count_pages,
-                "count_pages is too large. Maximum supported is 10000",
-                traceback_info=capture_traceback_info(skip_frames=1),
+                "count_pages", count_pages, "maximum supported is 10000"
             )
 
         # Determine source for duplicate prevention
@@ -279,22 +273,14 @@ class InlineKeyboard(KeyboardBase):
         keyboard_state_str = (
             f"{count_pages}:{current_page}:{callback_pattern}:{source}"
         )
-
-        # Generate hash for duplicate detection
-        current_hash = PaginationUnchangedError.get_keyboard_hash(
-            keyboard_state_str
-        )
+        current_hash = hashlib.sha256(
+            keyboard_state_str.encode("utf-8")
+        ).hexdigest()
 
         # Check for duplicates
         if source in _pagination_hashes:
-            previous_hash = _pagination_hashes[source]
-            if current_hash == previous_hash:
-                raise PaginationUnchangedError(
-                    source=source,
-                    keyboard_hash=current_hash,
-                    previous_hash=previous_hash,
-                    traceback_info=capture_traceback_info(skip_frames=1),
-                )
+            if current_hash == _pagination_hashes[source]:
+                raise PaginationUnchangedError(source)
 
         # Store hash for future duplicate detection
         _pagination_hashes[source] = current_hash
@@ -541,27 +527,11 @@ class InlineKeyboard(KeyboardBase):
         ]
         self._update_keyboard()
 
-    @property
-    def pyrogram_markup(self) -> InlineKeyboardMarkup:
-        """Get the Pyrogram InlineKeyboardMarkup for this keyboard."""
-        if self.pyrogram_markup is None:
-            pyrogram_keyboard = []
-            for row in self.keyboard:
-                pyrogram_row = []
-                for button in row:
-                    if isinstance(button, InlineButton):
-                        pyrogram_row.append(button.to_pyrogram())
-                    else:
-                        pyrogram_row.append(button)
-                pyrogram_keyboard.append(pyrogram_row)
-            self.pyrogram_markup = InlineKeyboardMarkup(
-                inline_keyboard=pyrogram_keyboard
-            )
-        return self.pyrogram_markup
+
 
     def write(self, client: Any = None) -> Any:
         """Pyrogram serialization hook to allow passing this object directly as reply_markup."""
-        return self.pyrogram_markup.write(client)
+        return self._pyrogram_markup.write(client)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert keyboard to dictionary representation for serialization."""
@@ -679,9 +649,7 @@ class InlineKeyboard(KeyboardBase):
             >>> 'en_PIRATE' in all_locales
             True
         """
-        all_locales = self._get_locales()
-        all_locales.update(self.custom_locales)
-        return all_locales
+        return {**self._get_locales(), **self.custom_locales}
 
     def to_json(self) -> str:
         """Convert keyboard to JSON string.

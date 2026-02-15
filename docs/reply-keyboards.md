@@ -212,13 +212,12 @@ async def request_contact(client, message):
 ## Error Handling
 
 ```python
+from pykeyboard import ConfigurationError
+
 try:
     keyboard = ReplyKeyboard(row_width=0)  # Invalid
-except ValueError as e:
-    print(f"Keyboard error: {e}")
-
-# Always check if keyboard was created successfully
-if keyboard:
-    await message.reply_text("Choose:", reply_markup=keyboard)
-
+except ConfigurationError as e:
+    print(f"Error code: {e.error_code}")
+    print(f"Parameter: {e.param}")  # "row_width"
+    print(f"Value: {e.value}")      # 0
 ```

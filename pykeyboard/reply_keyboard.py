@@ -62,12 +62,12 @@ class ReplyKeyboard(KeyboardBase):
         None, description="Placeholder text for the input field"
     )
 
-    pyrogram_markup: Optional[ReplyKeyboardMarkup] = PrivateAttr(default=None)
+    _pyrogram_markup: Optional[ReplyKeyboardMarkup] = PrivateAttr(default=None)
 
     @model_validator(mode="after")
     def initialize_pyrogram_markup(self) -> "ReplyKeyboard":
         """Initialize the Pyrogram ReplyKeyboardMarkup after model creation."""
-        self.pyrogram_markup = ReplyKeyboardMarkup(
+        self._pyrogram_markup = ReplyKeyboardMarkup(
             keyboard=self.keyboard,
             is_persistent=self.is_persistent,
             resize_keyboard=self.resize_keyboard,
@@ -77,29 +77,22 @@ class ReplyKeyboard(KeyboardBase):
         )
         return self
 
-    def _update_keyboard(self) -> None:
-        """Update the underlying Pyrogram ReplyKeyboardMarkup."""
-        super()._update_keyboard()
-        if self.pyrogram_markup:
-            self.pyrogram_markup.keyboard = self.keyboard
-
     @property
     def pyrogram_markup(self) -> ReplyKeyboardMarkup:
         """Get the Pyrogram ReplyKeyboardMarkup for this keyboard."""
-        if self.pyrogram_markup is None:
-            self.pyrogram_markup = ReplyKeyboardMarkup(
-                keyboard=self.keyboard,
-                is_persistent=self.is_persistent,
-                resize_keyboard=self.resize_keyboard,
-                one_time_keyboard=self.one_time_keyboard,
-                selective=self.selective,
-                placeholder=self.placeholder,
-            )
-        return self.pyrogram_markup
+        return self._pyrogram_markup
+
+    def _update_keyboard(self) -> None:
+        """Update the underlying Pyrogram ReplyKeyboardMarkup."""
+        super()._update_keyboard()
+        if self._pyrogram_markup:
+            self._pyrogram_markup.keyboard = self.keyboard
+
+
 
     def write(self, client: Any = None) -> Any:
         """Pyrogram serialization hook to allow passing this object directly as reply_markup."""
-        return self.pyrogram_markup.write(client)
+        return self._pyrogram_markup.write(client)
 
     def to_dict(self) -> dict:
         """Convert keyboard to dictionary representation for serialization."""

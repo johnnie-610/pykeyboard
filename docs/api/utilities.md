@@ -1,130 +1,112 @@
-# Utilities API Reference
+# Utilities
 
-## Python Version Utilities
+Utility functions for creating and inspecting keyboards from configuration dicts.
 
-### get_python_version()
-
-Get the current Python version as a tuple.
-
-**Returns:**
-- `tuple[int, int, int]`: Tuple of (major, minor, micro) version numbers
-
-### supports_match_case()
-
-Check if the current Python version supports match/case statements.
-
-**Returns:**
-- `bool`: True if Python 3.10+ is available, False otherwise
-
-### supports_typing_self()
-
-Check if the current Python version supports typing.Self.
-
-**Returns:**
-- `bool`: True if Python 3.11+ is available, False otherwise
-
-### supports_literal_types()
-
-Check if the current Python version supports Literal types.
-
-**Returns:**
-- `bool`: True if Python 3.8+ is available, False otherwise
+Importable from `pykeyboard.utils`.
 
 ---
 
-## Keyboard Creation Utilities
+## create_keyboard_from_config <span class="api-badge method">function</span>
 
-### create_keyboard_from_config(config)
-
-Create a keyboard from a configuration dictionary using modern Python features.
-
-**Parameters:**
-- `config` (Dict[str, Any]): Configuration dictionary with keyboard settings
-
-**Returns:**
-- `Union[InlineKeyboard, ReplyKeyboard]`: Configured keyboard instance
-
-**Raises:**
-- `ValueError`: If configuration is invalid
-
-### get_keyboard_info(keyboard)
-
-Get comprehensive information about a keyboard using modern typing features.
-
-**Parameters:**
-- `keyboard` (Union[InlineKeyboard, ReplyKeyboard]): The keyboard to analyze
-
-**Returns:**
-- `Dict[str, Any]`: Dictionary with keyboard information
-
-### validate_keyboard_config(config)
-
-Validate a keyboard configuration using modern Python features.
-
-**Parameters:**
-- `config` (Dict[str, Any]): Configuration dictionary to validate
-
-**Returns:**
-- `List[str]`: List of validation error messages (empty if valid)
-
----
-
-## File I/O Utilities
-
-### export_keyboard_to_file(keyboard, file_path, format='json')
-
-Export a keyboard to a file using modern Python features.
-
-**Parameters:**
-- `keyboard` (Union[InlineKeyboard, ReplyKeyboard]): The keyboard to export
-- `file_path` (Union[str, Path]): Path to save the file
-- `format` (Literal['json', 'yaml', 'pickle']): Export format
-
-**Raises:**
-- `ValueError`: If format is unsupported
-- `ImportError`: If required library is not available
-
-### import_keyboard_from_file(file_path, format='json')
-
-Import a keyboard from a file using modern Python features.
-
-**Parameters:**
-- `file_path` (Union[str, Path]): Path to the file to load
-- `format` (Literal['json', 'yaml', 'pickle']): Import format
-
-**Returns:**
-- `Union[InlineKeyboard, ReplyKeyboard]`: Loaded keyboard instance
-
-**Raises:**
-- `ValueError`: If format is unsupported
-- `ImportError`: If required library is not available
-
----
-
-## Feature Demonstration
-
-### demonstrate_modern_features()
-
-Demonstrate modern Python features usage in the library.
-
-**Returns:**
-- `Dict[str, Any]`: Dictionary with information about Python version and supported features
-
----
-
-## Type Aliases
-
-### KeyboardType
-
-Type alias for keyboard types.
+Create a keyboard from a configuration dictionary.
 
 ```python
-KeyboardType = Literal['inline', 'reply']  # or str if Literal not supported
+create_keyboard_from_config(config: dict[str, Any]) -> InlineKeyboard | ReplyKeyboard
 ```
 
-### ExportFormat
+### Config Keys
 
-Type alias for export formats.
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `type` | `str` | `"inline"` | `"inline"` or `"reply"` |
+| `row_width` | `int` | — | Buttons per row |
+| `buttons` | `list` | `[]` | Button configs (dicts or plain strings) |
+
+!!! warning "Raises"
+    **`ValueError`** — if `type` is not `"inline"` or `"reply"`
+
+??? example "Usage"
+    ```python
+    from pykeyboard.utils import create_keyboard_from_config
+
+    kb = create_keyboard_from_config({
+        "type": "inline",
+        "row_width": 2,
+        "buttons": [
+            {"text": "Yes", "callback_data": "yes"},
+            {"text": "No", "callback_data": "no"},
+        ],
+    })
+    ```
+
+---
+
+## get_keyboard_info <span class="api-badge method">function</span>
+
+Get comprehensive metadata about a keyboard.
 
 ```python
-ExportFormat = Literal['json', 'yaml', 'pickle']  # or str if Literal not supported
+get_keyboard_info(keyboard: InlineKeyboard | ReplyKeyboard) -> dict[str, Any]
+```
+
+### Return Fields
+
+=== "Common"
+
+    | Key | Type | Description |
+    |-----|------|-------------|
+    | `type` | `str` | Class name |
+    | `row_width` | `int` | Row width |
+    | `total_buttons` | `int` | Total buttons |
+    | `total_rows` | `int` | Number of rows |
+
+=== "InlineKeyboard extras"
+
+    | Key | Type | Description |
+    |-----|------|-------------|
+    | `has_pagination` | `bool` | Has pagination |
+    | `current_page` | `int` | Current page |
+    | `total_pages` | `int` | Total pages |
+    | `callback_pattern` | `str` | Callback pattern |
+    | `custom_locales_count` | `int` | Custom locales count |
+
+=== "ReplyKeyboard extras"
+
+    | Key | Type | Description |
+    |-----|------|-------------|
+    | `is_persistent` | `bool` | Persistent keyboard |
+    | `resize_keyboard` | `bool` | Auto-resize |
+    | `one_time_keyboard` | `bool` | One-time use |
+    | `selective` | `bool` | Selective display |
+    | `placeholder` | `str` | Input placeholder |
+
+??? example "Usage"
+    ```python
+    from pykeyboard import InlineKeyboard, InlineButton
+    from pykeyboard.utils import get_keyboard_info
+
+    kb = InlineKeyboard()
+    kb.add(InlineButton("OK", "ok"))
+    info = get_keyboard_info(kb)
+    print(info["total_buttons"])  # 1
+    ```
+
+---
+
+## validate_keyboard_config <span class="api-badge method">function</span>
+
+Validate a configuration dict before creating a keyboard.
+
+```python
+validate_keyboard_config(config: dict[str, Any]) -> list[str]
+```
+
+**Returns:** List of error messages (empty if valid).
+
+??? example "Usage"
+    ```python
+    from pykeyboard.utils import validate_keyboard_config
+
+    errors = validate_keyboard_config({"type": "unknown", "row_width": -1})
+    # ["Invalid keyboard type: unknown", "row_width must be a positive integer"]
+    ```

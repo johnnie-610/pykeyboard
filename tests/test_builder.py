@@ -103,13 +103,14 @@ class TestKeyboardBuilder:
         items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"]
         builder.add_paginated_buttons(items, "select_{item}_page_{page}", 3, 1)
 
-        # add_paginated_buttons calls add_button for each item, so only last item remains
+        # First page: items 1-3, added as a single row
         assert len(keyboard.keyboard) == 1
-        assert len(keyboard.keyboard[0]) == 1
-        assert (
-            keyboard.keyboard[0][0].text == "Item 3"
-        )  # Last item (3rd item, 0-indexed)
-        assert keyboard.keyboard[0][0].callback_data == "select_Item 3_page_1"
+        assert len(keyboard.keyboard[0]) == 3
+        assert keyboard.keyboard[0][0].text == "Item 1"
+        assert keyboard.keyboard[0][1].text == "Item 2"
+        assert keyboard.keyboard[0][2].text == "Item 3"
+        assert keyboard.keyboard[0][0].callback_data == "select_Item 1_page_1"
+        assert keyboard.keyboard[0][2].callback_data == "select_Item 3_page_1"
 
     def test_add_navigation_buttons(self):
         """Test navigation button addition."""

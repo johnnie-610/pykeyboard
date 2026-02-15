@@ -2,7 +2,7 @@
 
 pkgs.mkShell {
   packages = with pkgs; [
-    python3
+    python314
     poetry
     # gcc.cc.lib
   ];
@@ -10,7 +10,7 @@ pkgs.mkShell {
   # export LD_LIBRARY_PATH=${pkgs.gcc.cc.lib}/lib:$LD_LIBRARY_PATH
 
   shellHook = ''
-    echo "🐍 Python 3.13 + Poetry development environment"
+    echo "🐍 Python 3.14 + Poetry development environment"
     echo "Python version: $(python --version)"
     echo "Poetry version: $(poetry --version)"
     echo ""
@@ -28,7 +28,7 @@ pkgs.mkShell {
   '';
 
   # Ensure poetry uses the correct Python version
-  POETRY_PYTHON = "${pkgs.python3}/bin/python";
+  POETRY_PYTHON = "${pkgs.python314}/bin/python";
 
   # Poetry configuration for better development experience
   POETRY_VENV_IN_PROJECT = "1";  # Create .venv in project directory

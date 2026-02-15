@@ -102,6 +102,7 @@ keyboard.paginate(
 #### Different Page Counts
 
 **3 Pages:**
+
 ```python
 keyboard = InlineKeyboard()
 keyboard.paginate(3, 2, 'pagination:{number}')
@@ -113,6 +114,7 @@ keyboard.paginate(3, 2, 'pagination:{number}')
 </figure>
 
 **5 Pages:**
+
 ```python
 keyboard = InlineKeyboard()
 keyboard.paginate(5, 3, 'pagination:{number}')
@@ -124,6 +126,7 @@ keyboard.paginate(5, 3, 'pagination:{number}')
 </figure>
 
 **9 Pages:**
+
 ```python
 keyboard = InlineKeyboard()
 keyboard.paginate(9, 5, 'pagination:{number}')
@@ -135,6 +138,7 @@ keyboard.paginate(9, 5, 'pagination:{number}')
 </figure>
 
 **100 Pages:**
+
 ```python
 keyboard = InlineKeyboard()
 keyboard.paginate(100, 50, 'page:{number}')
@@ -146,6 +150,7 @@ keyboard.paginate(100, 50, 'page:{number}')
 </figure>
 
 **150 Pages with Additional Buttons:**
+
 ```python
 keyboard = InlineKeyboard()
 keyboard.paginate(150, 75, 'page:{number}')
@@ -179,14 +184,14 @@ keyboard.languages(
 ### Builder Pattern
 
 ```python
-from pykeyboard import KeyboardBuilder
+from pykeyboard import KeyboardBuilder, InlineKeyboard
 
-builder = KeyboardBuilder(InlineKeyboard())
-keyboard = (builder
-    .add_button("Yes", "yes")
-    .add_button("No", "no")
-    .add_row("Maybe", "Cancel")
-    .build())
+keyboard = (
+    KeyboardBuilder(InlineKeyboard())
+    .add_row("✅ Yes", "❌ No")
+    .add_row("🤔 Maybe", "⏪ Cancel")
+    .build()
+)
 ```
 
 ## Best Practices
@@ -212,7 +217,6 @@ except PaginationUnchangedError as e:
     # Handle MessageNotModifiedError, etc.
     await callback_query.answer("Already updated")
 ```
-
 
 ## Common Patterns
 

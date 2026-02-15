@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Johnnie
+# Copyright (c) 2025-2026 Johnnie
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -7,19 +7,13 @@
 #
 # pykeyboard/builder.py
 
-import logging
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+import re
+from typing import Any, Callable, Dict, List, Optional, Union
 
-from .errors import (ConfigurationError, LocaleError, PaginationError,
-                     ValidationError)
+from .errors import ValidationError
 from .inline_keyboard import InlineKeyboard
 from .keyboard_base import Button, InlineButton, KeyboardBase
 from .reply_keyboard import ReplyButton, ReplyKeyboard
-
-T = TypeVar("T", bound=KeyboardBase)
-
-logger = logging.getLogger("pykeyboard.builder")
 
 class KeyboardBuilder:
     """Fluent API builder for type-safe keyboard construction.
@@ -97,13 +91,13 @@ class KeyboardBuilder:
     ) -> Any:
         """Create a button from various specification formats."""
         if isinstance(btn_spec, str):
-            # Simple text button
+            # Auto-generate callback_data from text for inline keyboards
             if isinstance(self.keyboard, InlineKeyboard):
-                return InlineButton(text=btn_spec)
+                callback_data = re.sub(r"[^\w]+", "_", btn_spec).strip("_").lower()
+                return InlineButton(text=btn_spec, callback_data=callback_data)
             else:
                 return ReplyButton(text=btn_spec)
         elif isinstance(btn_spec, dict):
-            # Dict specification
             if isinstance(self.keyboard, InlineKeyboard):
                 return InlineButton(**btn_spec)
             else:
@@ -117,7 +111,7 @@ class KeyboardBuilder:
         # Run validation hooks
         for hook in self._validation_hooks:
             if not hook(button):
-                raise ValidationError("button", button, "valid")
+                raise ValidationError("button", button, reason="failed validation hook")
 
         # Apply transforms
         for transform in self._button_transforms:
@@ -194,23 +188,15 @@ class KeyboardBuilder:
         Example:
             >>> builder.add_row("Left", "Right")
         """
-        try:
-            processed_buttons = []
+        processed_buttons = []
 
-            for btn_spec in buttons:
-                button = self._create_button_from_spec(btn_spec)
-                button = self._process_button(button)
-                processed_buttons.append(button)
+        for btn_spec in buttons:
+            button = self._create_button_from_spec(btn_spec)
+            button = self._process_button(button)
+            processed_buttons.append(button)
 
-            self.keyboard.row(*processed_buttons)
-            return self
-        except (
-            PaginationError,
-            ValidationError,
-            LocaleError,
-            ConfigurationError,
-        ) as e:
-            raise e
+        self.keyboard.row(*processed_buttons)
+        return self
 
     def add_conditional_button(
         self,
@@ -267,11 +253,20 @@ class KeyboardBuilder:
         end_idx = start_idx + items_per_page
         page_items = items[start_idx:end_idx]
 
+        buttons = []
         for item in page_items:
             callback_data = callback_pattern.format(
                 item=item, page=current_page
             )
-            self.add_button(item, callback_data)
+            if isinstance(self.keyboard, InlineKeyboard):
+                btn = InlineButton(text=item, callback_data=callback_data)
+            else:
+                btn = ReplyButton(text=item)
+            btn = self._process_button(btn)
+            buttons.append(btn)
+
+        if buttons:
+            self.keyboard.row(*buttons)
 
         return self
 
@@ -584,27 +579,3 @@ def build_reply_keyboard() -> KeyboardBuilder:
     """Create a builder for reply keyboards."""
     return KeyboardBuilder(ReplyKeyboard())
 
-
-# Decorator for custom keyboard factories
-def keyboard_factory(
-    func: Callable[..., Union[InlineKeyboard, ReplyKeyboard]],
-) -> Callable[..., Union[InlineKeyboard, ReplyKeyboard]]:
-    """Decorator to mark functions as keyboard factories.
-
-    This decorator can be used to create custom factory functions
-    with additional validation and error handling.
-
-    Example:
-        >>> @keyboard_factory
-        ... def create_custom_keyboard():
-        ...     return InlineKeyboard()
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            raise ValueError(f"Failed to create keyboard: {e}") from e
-
-    return wrapper

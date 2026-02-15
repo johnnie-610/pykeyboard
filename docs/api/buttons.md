@@ -1,118 +1,126 @@
-# Buttons API Reference
+# Buttons
 
-## Class: Button
+## Button <span class="api-badge class">Class</span>
 
-Base button model with text validation.
-
-### Constructor
+Base button model with text validation. All button types inherit from this.
 
 ```python
 Button(text: str)
 ```
 
-### Attributes
-
-- `text` (str): The display text for the button. Must be a non-empty string.
-
-### Validation
-
-- Text cannot be empty or whitespace-only
-- Raises `ValidationError` if validation fails
+!!! warning "Raises"
+    **`ValidationError`** — if `text` is empty or whitespace-only
 
 ---
 
-## Class: InlineButton
+## InlineButton <span class="api-badge class">Class</span>
 
-Inline keyboard button with comprehensive Pyrogram integration.
+Inline keyboard button with full Pyrogram integration.
 
 ### Constructor
 
 ```python
 InlineButton(
     text: str,
-    callback_data: Optional[Union[str, bytes]] = None,
-    url: Optional[str] = None,
-    web_app: Optional[WebAppInfo] = None,
-    login_url: Optional[LoginUrl] = None,
-    user_id: Optional[int] = None,
-    switch_inline_query: Optional[str] = None,
-    switch_inline_query_current_chat: Optional[str] = None,
-    callback_game: Optional[CallbackGame] = None,
-    requires_password: Optional[bool] = None,
-    pay: Optional[bool] = None,
-    copy_text: Optional[str] = None
+    callback_data: str | bytes | None = None,
+    url: str | None = None,
+    web_app: WebAppInfo | None = None,
+    login_url: LoginUrl | None = None,
+    user_id: int | None = None,
+    switch_inline_query: str | None = None,
+    switch_inline_query_current_chat: str | None = None,
+    callback_game: CallbackGame | None = None,
+    requires_password: bool | None = None,
+    pay: bool | None = None,
+    copy_text: str | None = None,
 )
 ```
 
-### Attributes
+### Parameters
 
-- `text` (str): Button display text (inherited from Button)
-- `callback_data` (Optional[Union[str, bytes]]): Callback data sent when button is pressed
-- `url` (Optional[str]): URL to open when button is pressed
-- `web_app` (Optional[WebAppInfo]): Web app to open
-- `login_url` (Optional[LoginUrl]): Login URL for authorization
-- `user_id` (Optional[int]): User ID for the button
-- `switch_inline_query` (Optional[str]): Switch to inline query
-- `switch_inline_query_current_chat` (Optional[str]): Switch to inline query in current chat
-- `callback_game` (Optional[CallbackGame]): Callback game
-- `requires_password` (Optional[bool]): Whether password is required
-- `pay` (Optional[bool]): Whether this is a pay button
-- `copy_text` (Optional[str]): Text to copy to clipboard
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Display text (required) |
+| `callback_data` | `str \| bytes` | Data sent on press |
+| `url` | `str` | URL to open |
+| `web_app` | `WebAppInfo` | Web app to launch |
+| `login_url` | `LoginUrl` | Authorization URL |
+| `user_id` | `int` | Target user ID |
+| `switch_inline_query` | `str` | Switch to inline mode |
+| `switch_inline_query_current_chat` | `str` | Inline query in current chat |
+| `callback_game` | `CallbackGame` | Game callback |
+| `requires_password` | `bool` | Require password |
+| `pay` | `bool` | Payment button |
+| `copy_text` | `str` | Text to copy to clipboard |
+
+!!! tip
+    Only **one** action field should be set per button. The most common are `callback_data` and `url`.
 
 ### Methods
 
-#### to_pyrogram()
+#### to_pyrogram <span class="api-badge method">method</span>
 
-Convert to Pyrogram InlineKeyboardButton.
+Convert to Pyrogram `InlineKeyboardButton`.
 
-**Returns:**
-- `InlineKeyboardButton`: Pyrogram-compatible button instance
+??? example "Usage"
+    ```python
+    from pykeyboard import InlineButton
 
-### Notes
+    # Callback button
+    btn = InlineButton("👍 Like", callback_data="like")
 
-- Only one of the optional fields should be used per button for optimal UX
-- Supports both positional and keyword arguments (positional deprecated)
+    # URL button
+    link = InlineButton("🔗 Visit", url="https://example.com")
+
+    # Contact button
+    contact = InlineButton("📞 Support", user_id=123456)
+    ```
 
 ---
 
-## Class: ReplyButton
+## ReplyButton <span class="api-badge class">Class</span>
 
-Reply keyboard button with comprehensive Pyrogram integration and advanced features.
+Reply keyboard button with device feature requests.
 
 ### Constructor
 
 ```python
 ReplyButton(
     text: str,
-    request_contact: Optional[bool] = None,
-    request_location: Optional[bool] = None,
-    request_poll: Optional[KeyboardButtonPollType] = None,
-    request_users: Optional[KeyboardButtonRequestUsers] = None,
-    request_chat: Optional[KeyboardButtonRequestChat] = None,
-    web_app: Optional[WebAppInfo] = None
+    request_contact: bool | None = None,
+    request_location: bool | None = None,
+    request_poll: KeyboardButtonPollType | None = None,
+    request_users: KeyboardButtonRequestUsers | None = None,
+    request_chat: KeyboardButtonRequestChat | None = None,
+    web_app: WebAppInfo | None = None,
 )
 ```
 
-### Attributes
+### Parameters
 
-- `text` (str): Button display text (inherited from Button)
-- `request_contact` (Optional[bool]): Request user's contact information when pressed
-- `request_location` (Optional[bool]): Request user's location when pressed
-- `request_poll` (Optional[KeyboardButtonPollType]): Request poll creation with specified type
-- `request_users` (Optional[KeyboardButtonRequestUsers]): Request user selection with specified criteria
-- `request_chat` (Optional[KeyboardButtonRequestChat]): Request chat selection with specified criteria
-- `web_app` (Optional[WebAppInfo]): Web app to open when button is pressed
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Display text (required) |
+| `request_contact` | `bool` | Request phone number |
+| `request_location` | `bool` | Request GPS location |
+| `request_poll` | `KeyboardButtonPollType` | Request poll creation |
+| `request_users` | `KeyboardButtonRequestUsers` | Request user selection |
+| `request_chat` | `KeyboardButtonRequestChat` | Request chat selection |
+| `web_app` | `WebAppInfo` | Web app to launch |
+
+!!! tip
+    Only **one** `request_*` field should be set per button.
 
 ### Methods
 
-#### to_pyrogram()
+#### to_pyrogram <span class="api-badge method">method</span>
 
-Convert to Pyrogram KeyboardButton.
+Convert to Pyrogram `KeyboardButton`.
 
-**Returns:**
-- `KeyboardButton`: Pyrogram-compatible button instance
+??? example "Usage"
+    ```python
+    from pykeyboard import ReplyButton
 
-### Notes
-
-- Only one request_* field should be set per button for optimal UX
-- Supports both positional and keyword arguments (positional deprecated)
+    contact = ReplyButton("📞 Share Contact", request_contact=True)
+    location = ReplyButton("📍 Share Location", request_location=True)
+    ```

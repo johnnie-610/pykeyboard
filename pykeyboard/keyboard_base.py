@@ -154,7 +154,7 @@ class Button(BaseModel):
         """
         if not v.strip():
             raise ValidationError(
-                "text", expected_type="str", reason="text cannot be empty"
+                "text", v, expected="non-empty string", reason="text cannot be empty"
             )
         return v
 

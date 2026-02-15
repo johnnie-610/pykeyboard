@@ -1,54 +1,17 @@
-"""Tests for utility functions and modern Python features."""
-
-import json
-import os
-import tempfile
+"""Tests for utility functions."""
 
 import pytest
 
-from pykeyboard import (InlineKeyboard, ReplyKeyboard,
-                        create_keyboard_from_config, export_keyboard_to_file,
-                        get_keyboard_info, import_keyboard_from_file,
-                        validate_keyboard_config)
-from pykeyboard.utils import (get_python_version, supports_literal_types,
-                              supports_match_case, supports_typing_self)
+from pykeyboard import (
+    InlineKeyboard,
+    ReplyKeyboard,
+    create_keyboard_from_config,
+    get_keyboard_info,
+    validate_keyboard_config,
+)
 
 
-class TestPythonVersionUtilities:
-    """Test cases for Python version utility functions."""
-
-    def test_get_python_version(self):
-        """Test getting Python version as tuple."""
-        version = get_python_version()
-
-        assert isinstance(version, tuple)
-        assert len(version) == 3
-        assert all(isinstance(v, int) for v in version)
-        assert version[0] >= 3  # Major version should be 3 or higher
-
-    def test_supports_match_case(self):
-        """Test match/case support detection."""
-        result = supports_match_case()
-
-        # Should return True for Python 3.10+, False for older versions
-        assert isinstance(result, bool)
-
-    def test_supports_typing_self(self):
-        """Test typing.Self support detection."""
-        result = supports_typing_self()
-
-        # Should return True for Python 3.11+, False for older versions
-        assert isinstance(result, bool)
-
-    def test_supports_literal_types(self):
-        """Test Literal types support detection."""
-        result = supports_literal_types()
-
-        # Should return True for Python 3.8+, False for older versions
-        assert isinstance(result, bool)
-
-
-class TestKeyboardCreation:
+class TestCreateKeyboardFromConfig:
     """Test cases for keyboard creation from configuration."""
 
     def test_create_inline_keyboard_from_config(self):
@@ -59,7 +22,7 @@ class TestKeyboardCreation:
             "buttons": [
                 {"text": "Button 1", "callback_data": "btn1"},
                 {"text": "Button 2", "callback_data": "btn2"},
-                "Button 3",  # Simple text button
+                "Button 3",
             ],
         }
 
@@ -67,9 +30,7 @@ class TestKeyboardCreation:
 
         assert isinstance(keyboard, InlineKeyboard)
         assert keyboard.row_width == 2
-        assert (
-            len(keyboard.keyboard) == 2
-        )  # 3 buttons with row_width=2 = 2 rows
+        assert len(keyboard.keyboard) == 2  # 3 buttons, row_width=2 → 2 rows
         assert len(keyboard.keyboard[0]) == 2
         assert len(keyboard.keyboard[1]) == 1
 
@@ -96,7 +57,7 @@ class TestKeyboardCreation:
         with pytest.raises(ValueError, match="Unsupported keyboard type"):
             create_keyboard_from_config(config)
 
-    def test_create_keyboard_missing_type(self):
+    def test_create_keyboard_missing_type_defaults_to_inline(self):
         """Test creating keyboard with missing type defaults to inline."""
         config = {"buttons": ["Button 1"]}
 
@@ -104,12 +65,40 @@ class TestKeyboardCreation:
 
         assert isinstance(keyboard, InlineKeyboard)
 
+    def test_create_keyboard_case_insensitive_type(self):
+        """Test that keyboard type is case-insensitive."""
+        config = {"type": "INLINE", "buttons": ["Button 1"]}
 
-class TestKeyboardInfo:
+        keyboard = create_keyboard_from_config(config)
+
+        assert isinstance(keyboard, InlineKeyboard)
+
+    def test_create_keyboard_empty_buttons(self):
+        """Test creating keyboard with no buttons."""
+        config = {"type": "inline", "buttons": []}
+
+        keyboard = create_keyboard_from_config(config)
+
+        assert isinstance(keyboard, InlineKeyboard)
+        assert len(keyboard.keyboard) == 0
+
+
+class TestGetKeyboardInfo:
     """Test cases for keyboard information retrieval."""
 
+    def test_get_inline_keyboard_info(self):
+        """Test getting information about an inline keyboard."""
+        keyboard = InlineKeyboard()
+        info = get_keyboard_info(keyboard)
+
+        assert info["type"] == "InlineKeyboard"
+        assert info["total_buttons"] == 0
+        assert info["total_rows"] == 0
+        assert "has_pagination" in info
+        assert "custom_locales_count" in info
+
     def test_get_reply_keyboard_info(self):
-        """Test getting information about reply keyboard."""
+        """Test getting information about a reply keyboard."""
         keyboard = ReplyKeyboard()
         keyboard.add("Reply 1", "Reply 2")
         keyboard.is_persistent = True
@@ -118,45 +107,29 @@ class TestKeyboardInfo:
         info = get_keyboard_info(keyboard)
 
         assert info["type"] == "ReplyKeyboard"
-        assert (
-            info["total_buttons"] == 2
-        )  # Reply keyboards don't support pagination
+        assert info["total_buttons"] == 2
         assert info["is_persistent"] is True
         assert info["resize_keyboard"] is True
-
-    def test_get_keyboard_info_features(self):
-        """Test that keyboard info includes Python feature support."""
-        info = get_keyboard_info(InlineKeyboard())
-
-        assert "features" in info
-        assert "match_case" in info["features"]
-        assert "typing_self" in info["features"]
-        assert "literal_types" in info["features"]
-        assert isinstance(info["features"]["match_case"], bool)
 
     def test_get_keyboard_info_custom_locales_count(self):
         """Test that get_keyboard_info correctly counts custom locales."""
         keyboard = InlineKeyboard()
 
-        # Initially no custom locales
         info = get_keyboard_info(keyboard)
         assert info["custom_locales_count"] == 0
 
-        # Add some custom locales
         keyboard.add_custom_locale("custom1", "Custom 1")
         keyboard.add_custom_locale("custom2", "Custom 2")
 
-        # Check count is updated
         info = get_keyboard_info(keyboard)
         assert info["custom_locales_count"] == 2
 
-        # Clear custom locales
         keyboard.clear_custom_locales()
         info = get_keyboard_info(keyboard)
         assert info["custom_locales_count"] == 0
 
 
-class TestConfigValidation:
+class TestValidateKeyboardConfig:
     """Test cases for keyboard configuration validation."""
 
     def test_validate_valid_config(self):
@@ -184,7 +157,7 @@ class TestConfigValidation:
         """Test validation of invalid row width."""
         config = {
             "type": "inline",
-            "row_width": 0,  # Invalid: must be >= 1
+            "row_width": 0,
             "buttons": ["Button 1"],
         }
 
@@ -199,10 +172,16 @@ class TestConfigValidation:
         """Test validation of invalid buttons type."""
         config = {
             "type": "inline",
-            "buttons": "not_a_list",  # Invalid: must be a list
+            "buttons": "not_a_list",
         }
 
         errors = validate_keyboard_config(config)
 
         assert len(errors) > 0
         assert any("buttons must be a list" in error for error in errors)
+
+    def test_validate_empty_config(self):
+        """Test validation of an empty config passes."""
+        errors = validate_keyboard_config({})
+
+        assert errors == []
