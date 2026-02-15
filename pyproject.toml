@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pykeyboard-kurigram"
-version = "0.3.1"
+version = "0.3.2"
 description = "Best Keyboard and Pagination for the Kurigram Library."
 authors = ["Johnnie <expose-bright-coat@duck.com>"]
 license = "MIT"

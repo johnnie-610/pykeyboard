@@ -72,7 +72,7 @@ class KeyboardBase(BaseModel):
             >>> keyboard.keyboard
             [['A', 'B'], ['C', 'D'], ['E']]
         """
-        self.keyboard.clear()
+        
         for i in range(0, len(args), self.row_width):
             row_slice = args[i : i + self.row_width]
             self.keyboard.append(
