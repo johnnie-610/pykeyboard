@@ -54,7 +54,7 @@ from pykeyboard import (
     validate_button,
 )
 
-# ─── Configuration ────────────────────────────────────────────────────────────
+#  Configuration 
 
 LIBRARY_NAME = "Kurigram"
 PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
@@ -78,11 +78,11 @@ app = Client(
     in_memory=True,
 )
 
-# ─── State ────────────────────────────────────────────────────────────────────
+#  State 
 
 user_states: dict[int, dict[str, object]] = {}
 
-# ─── Helpers ──────────────────────────────────────────────────────────────────
+#  Helpers 
 
 
 def truncate(text: str, limit: int = 1500) -> str:
@@ -95,7 +95,7 @@ def code_block(code: str) -> str:
     return f"<pre>{code.strip()}</pre>"
 
 
-# ─── Menu keyboards ──────────────────────────────────────────────────────────
+#  Menu keyboards 
 
 
 def main_menu_keyboard() -> InlineKeyboard:
@@ -154,7 +154,7 @@ def error_menu_keyboard() -> InlineKeyboard:
     return kb
 
 
-# ─── Help text ────────────────────────────────────────────────────────────────
+#  Help text 
 
 
 def help_text() -> str:
@@ -174,7 +174,7 @@ def help_text() -> str:
     )
 
 
-# ─── Commands ─────────────────────────────────────────────────────────────────
+#  Commands 
 
 
 @app.on_message(filters.command("start"))
@@ -204,7 +204,7 @@ async def cmd_status(_client: Client, message: Message):
     )
 
 
-# ─── Callback router ─────────────────────────────────────────────────────────
+#  Callback router 
 
 
 @app.on_callback_query()
@@ -215,7 +215,7 @@ async def on_callback(_client: Client, callback: CallbackQuery):
 
     try:
         match data:
-            # ── Navigation ────────────────────────────────────────────────
+            #  Navigation 
             case "menu:main":
                 user_states[user_id]["menu"] = "main"
                 await callback.edit_message_text(
@@ -223,26 +223,26 @@ async def on_callback(_client: Client, callback: CallbackQuery):
                     reply_markup=main_menu_keyboard(),
                 )
 
-            # ── Inline Keyboard ───────────────────────────────────────────
+            #  Inline Keyboard 
             case "menu:inline":
                 await _demo_inline(callback)
 
-            # ── Reply Keyboard ────────────────────────────────────────────
+            #  Reply Keyboard 
             case "menu:reply":
                 await _demo_reply(callback)
 
-            # ── Pagination ────────────────────────────────────────────────
+            #  Pagination 
             case "menu:pagination":
                 await callback.edit_message_text(
                     "📄 <b>Pagination Demos</b>\n\nChoose total pages:",
                     reply_markup=pagination_menu_keyboard(),
                 )
 
-            # ── Languages ─────────────────────────────────────────────────
+            #  Languages 
             case "menu:languages":
                 await _demo_languages(callback)
 
-            # ── Errors ────────────────────────────────────────────────────
+            #  Errors 
             case "menu:errors":
                 await callback.edit_message_text(
                     "🚨 <b>Error Handling Demo</b>\n\n"
@@ -254,24 +254,24 @@ async def on_callback(_client: Client, callback: CallbackQuery):
                     reply_markup=error_menu_keyboard(),
                 )
 
-            # ── Builder ───────────────────────────────────────────────────
+            #  Builder 
             case "menu:builder":
                 await callback.edit_message_text(
                     "🏗️ <b>Builder & Factory</b>\n\nChoose a preset:",
                     reply_markup=builder_menu_keyboard(),
                 )
 
-            # ── Performance ───────────────────────────────────────────────
+            #  Performance 
             case "menu:performance":
                 await _demo_performance(callback)
 
-            # ── Help ──────────────────────────────────────────────────────
+            #  Help 
             case "menu:help":
                 await callback.edit_message_text(
                     help_text(), reply_markup=main_menu_keyboard()
                 )
 
-            # ── Dynamic routing ───────────────────────────────────────────
+            #  Dynamic routing 
             case _ if data.startswith("p:size:"):
                 await _handle_pagination_init(callback, data)
 
@@ -319,7 +319,7 @@ async def on_callback(_client: Client, callback: CallbackQuery):
         )
 
 
-# ─── Demo handlers ────────────────────────────────────────────────────────────
+#  Demo handlers 
 
 
 async def _demo_inline(callback: CallbackQuery) -> None:
@@ -458,7 +458,7 @@ async def _demo_performance(callback: CallbackQuery) -> None:
     )
 
 
-# ─── Pagination handlers ─────────────────────────────────────────────────────
+#  Pagination handlers 
 
 
 async def _handle_pagination_init(callback: CallbackQuery, data: str) -> None:
@@ -521,7 +521,7 @@ async def _handle_pagination_nav(
         )
 
 
-# ─── Builder handlers ────────────────────────────────────────────────────────
+#  Builder handlers 
 
 # Mapping of factory kind → (factory call, code snippet)
 _FACTORY_BUILDERS: dict[str, tuple[callable, str]] = {}
@@ -695,7 +695,7 @@ async def _demo_hooks(callback: CallbackQuery) -> None:
     )
 
 
-# ─── Error demo handlers ─────────────────────────────────────────────────────
+#  Error demo handlers 
 
 
 async def _handle_error_demo(callback: CallbackQuery, error_type: str) -> None:
@@ -798,7 +798,7 @@ async def _handle_error_demo(callback: CallbackQuery, error_type: str) -> None:
         )
 
 
-# ─── Action handlers ─────────────────────────────────────────────────────────
+#  Action handlers 
 
 
 async def _handle_action(callback: CallbackQuery, action: str) -> None:
@@ -842,7 +842,7 @@ async def _handle_action(callback: CallbackQuery, action: str) -> None:
         )
 
 
-# ─── Message handlers ────────────────────────────────────────────────────────
+#  Message handlers 
 
 
 @app.on_message()
@@ -868,7 +868,7 @@ async def on_message(_client: Client, message: Message):
             )
 
 
-# ─── Entry point ──────────────────────────────────────────────────────────────
+#  Entry point 
 
 
 async def main():

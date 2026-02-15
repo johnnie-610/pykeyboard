@@ -1,6 +1,6 @@
-/* ─── PyKeyboard Docs – Custom Styles ─────────────────────────────── */
+/*  PyKeyboard Docs – Custom Styles  */
 
-/* ── Keyframe Animations ─────────────────────────────────────────── */
+/*  Keyframe Animations  */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -39,7 +39,7 @@
   100% { background-position: 0% 50%; }
 }
 
-/* ── Color tokens – Light mode ───────────────────────────────────── */
+/*  Color tokens – Light mode  */
 :root {
   --md-primary-fg-color: #0d9488;
   --md-primary-fg-color--light: #5eead4;
@@ -66,7 +66,7 @@
   --pk-bg-badge-class: #d1fae5;
 }
 
-/* ── Color tokens – Dark mode ────────────────────────────────────── */
+/*  Color tokens – Dark mode  */
 [data-md-color-scheme="slate"] {
   --md-primary-fg-color: #2dd4bf;
   --md-primary-fg-color--light: #5eead4;
@@ -95,7 +95,7 @@
   --pk-bg-badge-class: rgba(6, 78, 59, 0.6);
 }
 
-/* ── Typography ──────────────────────────────────────────────────── */
+/*  Typography  */
 .md-typeset h1 {
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -124,7 +124,7 @@
   color: var(--md-default-fg-color--light);
 }
 
-/* ── Code blocks ─────────────────────────────────────────────────── */
+/*  Code blocks  */
 .md-typeset code {
   border-radius: 6px;
   padding: 0.15em 0.4em;
@@ -148,7 +148,7 @@
   line-height: 1.7;
 }
 
-/* ── Tables ──────────────────────────────────────────────────────── */
+/*  Tables  */
 .md-typeset table:not([class]) {
   border-collapse: separate;
   border-spacing: 0;
@@ -190,7 +190,7 @@
   background: var(--pk-surface-hover);
 }
 
-/* ── Admonitions ─────────────────────────────────────────────────── */
+/*  Admonitions  */
 .md-typeset .admonition,
 .md-typeset details {
   border-radius: 10px;
@@ -206,7 +206,7 @@
   transform: translateY(-1px);
 }
 
-/* ── API signature badges ────────────────────────────────────────── */
+/*  API signature badges  */
 .md-typeset .api-badge {
   display: inline-block;
   padding: 0.15em 0.6em;
@@ -246,7 +246,7 @@
   color: var(--pk-text-badge-class);
 }
 
-/* ── Navigation ──────────────────────────────────────────────────── */
+/*  Navigation  */
 .md-tabs {
   background: linear-gradient(135deg, var(--pk-primary), var(--md-primary-fg-color--dark));
 }
@@ -281,12 +281,12 @@
   font-weight: 600;
 }
 
-/* ── Content width ───────────────────────────────────────────────── */
+/*  Content width  */
 .md-grid {
   max-width: 1440px;
 }
 
-/* ── Horizontal rules – gradient line ────────────────────────────── */
+/*  Horizontal rules – gradient line  */
 .md-typeset hr {
   border: none;
   height: 2px;
@@ -301,7 +301,7 @@
   opacity: 0.6;
 }
 
-/* ── Hero title (landing page) ───────────────────────────────────── */
+/*  Hero title (landing page)  */
 .md-typeset .hero-title {
   font-size: 2.6em;
   font-weight: 900;
@@ -319,14 +319,14 @@
   animation: gradientShift 6s ease infinite;
 }
 
-/* ── Card-like content sections ──────────────────────────────────── */
+/*  Card-like content sections  */
 .md-content__inner > .md-typeset > h2 ~ p,
 .md-content__inner > .md-typeset > h2 ~ .highlight,
 .md-content__inner > .md-typeset > h3 ~ p {
   animation: fadeInUp 0.45s ease-out both;
 }
 
-/* ── Link styles ─────────────────────────────────────────────────── */
+/*  Link styles  */
 .md-typeset a:not(.md-button):not(.headerlink) {
   color: var(--pk-primary);
   text-decoration: none;
@@ -342,7 +342,7 @@
   color: var(--md-primary-fg-color--dark);
 }
 
-/* ── Material buttons ────────────────────────────────────────────── */
+/*  Material buttons  */
 .md-typeset .md-button {
   border-radius: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -363,7 +363,7 @@
   background: linear-gradient(135deg, var(--md-primary-fg-color--dark), var(--pk-primary));
 }
 
-/* ── Smooth transitions ──────────────────────────────────────────── */
+/*  Smooth transitions  */
 .md-typeset a,
 .md-nav__link,
 .md-tabs__link {
@@ -372,7 +372,7 @@
     opacity 0.2s ease;
 }
 
-/* ── Search bar polish ───────────────────────────────────────────── */
+/*  Search bar polish  */
 .md-search__input {
   border-radius: 8px !important;
   transition: box-shadow 0.25s ease;
@@ -382,7 +382,7 @@
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
 }
 
-/* ── Scrollbar styling ───────────────────────────────────────────── */
+/*  Scrollbar styling  */
 .md-sidebar__scrollwrap::-webkit-scrollbar {
   width: 4px;
 }
@@ -392,7 +392,7 @@
   border-radius: 4px;
 }
 
-/* ── Footer ──────────────────────────────────────────────────────── */
+/*  Footer  */
 .md-footer {
   border-top: 1px solid var(--pk-border);
 }
@@ -401,7 +401,7 @@
   background: linear-gradient(135deg, var(--md-primary-fg-color--dark), var(--pk-primary));
 }
 
-/* ── Grid cards (feature boxes on landing) ───────────────────────── */
+/*  Grid cards (feature boxes on landing)  */
 .md-typeset .grid.cards > ol > li,
 .md-typeset .grid.cards > ul > li {
   border: 1px solid var(--pk-border);
@@ -417,7 +417,7 @@
   border-color: var(--pk-primary-light);
 }
 
-/* ── Tabs styling ────────────────────────────────────────────────── */
+/*  Tabs styling  */
 .md-typeset .tabbed-labels > label {
   border-radius: 8px 8px 0 0;
   transition: color 0.2s ease, border-color 0.2s ease;
@@ -427,19 +427,19 @@
   color: var(--pk-primary);
 }
 
-/* ── TOC (Table of Contents) ─────────────────────────────────────── */
+/*  TOC (Table of Contents)  */
 .md-nav--secondary .md-nav__link--active {
   color: var(--pk-primary) !important;
   border-left: 2px solid var(--pk-primary);
   padding-left: 0.5em;
 }
 
-/* ── Mermaid diagram polish ──────────────────────────────────────── */
+/*  Mermaid diagram polish  */
 .mermaid {
   animation: fadeInUp 0.6s ease-out both;
 }
 
-/* ── Stagger animation for list items ────────────────────────────── */
+/*  Stagger animation for list items  */
 .md-typeset table:not([class]) tbody tr {
   animation: fadeInUp 0.35s ease-out both;
 }
@@ -451,7 +451,7 @@
 .md-typeset table:not([class]) tbody tr:nth-child(5) { animation-delay: 0.25s; }
 .md-typeset table:not([class]) tbody tr:nth-child(6) { animation-delay: 0.3s; }
 
-/* ── Reduce motion for a11y ──────────────────────────────────────── */
+/*  Reduce motion for a11y  */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

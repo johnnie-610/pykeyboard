@@ -102,7 +102,7 @@ except ImportError:
     LocaleError = None
     ConfigurationError = None
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __all__ = [
     # Core Classes
     "Button",

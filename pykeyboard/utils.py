@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Johnnie
+# Copyright (c) 2025-2026 Johnnie
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
